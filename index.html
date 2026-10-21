@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Checkitz – Audit a PG before you pay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#fff;--ink:#14213d;--mut:#5b6478;--card:#f3f4f7;--line:#dfe3ea;--red:#e63946;--redbg:#fde8ea;--ok:#1f8a4c;--okbg:#e3f5ea;--warn:#c27c0e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1626;--ink:#eef1f8;--mut:#9aa5bd;--card:#192138;--line:#2a3452;--red:#ff6470;--redbg:#3a1d26;--ok:#4cc38a;--okbg:#14301f;--warn:#e0a040}}
+:root[data-theme="dark"]{--bg:#0f1626;--ink:#eef1f8;--mut:#9aa5bd;--card:#192138;--line:#2a3452;--red:#ff6470;--redbg:#3a1d26;--ok:#4cc38a;--okbg:#14301f;--warn:#e0a040}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px}
+.hd{max-width:640px;margin:auto;display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:22px;letter-spacing:-.5px}.logo b{color:var(--red)}
+.tag{margin-left:auto;font-size:12px;color:var(--mut)}@media(max-width:420px){.tag{display:none}}@media(max-width:360px){.two{flex-direction:column;gap:8px}}
+.bld{fill:var(--ink)}.bld2{fill:var(--red)}.win{fill:var(--bg)}
+main{max-width:640px;margin:auto;padding:8px 16px 110px}
+h2{font-size:24px;letter-spacing:-.5px;margin:14px 0 4px}h3{margin:0 0 4px;font-size:18px}
+.mut{color:var(--mut)}.small{font-size:14px}small{color:var(--mut);display:block;font-size:13px}
+.card{background:var(--card);border-radius:18px;padding:16px;margin:14px 0}
+.pgbar{background:var(--redbg);padding:10px 14px}
+.two{display:flex;gap:12px;margin:10px 0}.two>div{flex:1;background:var(--bg);border-radius:12px;padding:8px 10px}
+.chip{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:12px;margin:2px 4px 2px 0}
+.btn{border:0;border-radius:14px;padding:13px 16px;min-height:50px;font:600 16px inherit;font-family:inherit;cursor:pointer;background:var(--red);color:#fff}
+.btn.sec{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.4;cursor:not-allowed}.full{width:100%;margin-top:10px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.nav2{margin-top:20px}.wrap{flex-wrap:wrap}.wrap>*{flex:1 1 130px}
+.seg{margin-top:12px}
+.seg button{padding:10px 4px;min-height:46px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;font:600 15px inherit;font-family:inherit;cursor:pointer}
+.seg button.on{color:#fff;border-color:transparent}
+.on.g{background:var(--ok)}.on.a{background:var(--warn)}.on.p{background:var(--red)}.on.n{background:var(--ink);color:var(--bg)!important}
+label{display:block;font-weight:600;margin:10px 0 0}
+.inp{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);padding:0 12px;margin-top:4px}
+.inp.bad{border-color:var(--red)}
+.inp input{border:0;outline:0;background:transparent;color:var(--ink);font:600 16px inherit;font-family:inherit;padding:12px 6px;width:100%}
+.err{color:var(--red);font-size:13px;min-height:0}
+.num{font-size:34px;font-weight:800;letter-spacing:-1px}
+.line{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}.line:last-child{border:0}
+.tot{font-size:17px;font-weight:800}
+.alert{background:var(--redbg);border-left:4px solid var(--red);padding:10px 12px;border-radius:10px;margin:8px 0;font-size:14px}
+.alert.good{background:var(--okbg);border-left-color:var(--ok)}
+.th{position:relative;display:inline-block;margin:8px 8px 0 0}.th img{width:100px;height:100px;object-fit:cover;border-radius:14px;display:block}
+.th button{position:absolute;top:-6px;right:-6px;width:26px;height:26px;border-radius:50%;border:0;background:var(--red);color:#fff;cursor:pointer}
+.ring{width:150px;height:150px;border-radius:50%;margin:10px auto;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0)}
+.ring div{width:118px;height:118px;border-radius:50%;background:var(--bg);display:grid;place-items:center;text-align:center;font-size:12px;color:var(--mut);line-height:1.1}
+.ring b{display:block;font-size:38px;color:var(--ink);letter-spacing:-1px}
+.cnt{display:flex;gap:8px;text-align:center}.cnt>div{flex:1;border-radius:12px;padding:8px 4px;background:var(--bg)}.cnt b{display:block;font-size:22px}
+.pill{font-size:12px;font-weight:600;border-radius:99px;padding:2px 10px;color:#fff;white-space:nowrap}
+.pill.m,.pill.g{background:var(--ok)}.pill.a{background:var(--warn)}.pill.p{background:var(--red)}.pill.x{background:var(--red)}.pill.n{background:var(--mut)}
+.pr{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.pr:last-child{border:0}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav div{max-width:640px;margin:auto;display:flex}
+nav button{flex:1;border:0;background:none;color:var(--mut);padding:8px 2px 10px;min-height:58px;font:600 12px inherit;font-family:inherit;cursor:pointer}
+nav button span{display:block;width:26px;height:26px;line-height:26px;margin:0 auto 2px;border-radius:50%;background:var(--card);font-size:13px}
+nav button.on{color:var(--red)}nav button.on span{background:var(--red);color:#fff}
+button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+</style></head><body>
+<header><div class="hd"><div class="logo"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="bld" x="3" y="5" width="16" height="23" rx="3"/><rect class="bld2" x="16" y="12" width="13" height="16" rx="3"/><g class="win"><rect x="7" y="9" width="3" height="3" rx=".7"/><rect x="12" y="9" width="3" height="3" rx=".7"/><rect x="7" y="15" width="3" height="3" rx=".7"/><rect x="12" y="15" width="3" height="3" rx=".7"/><rect x="20" y="17" width="3" height="3" rx=".7"/><rect x="24" y="17" width="3" height="3" rx=".7"/></g></svg><span>Check<b>itz</b></span></div><span class="tag">Audit a PG before you pay</span></div></header>
+<main id="m"></main>
+<nav><div id="nav"></div></nav>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const inr=n=>"₹"+Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
+const CH=[["Cleanliness","Rooms, corridors, common areas"],["Ventilation","Airflow, windows, stuffiness"],["Room condition","Walls, bed, cupboard, fittings"],["Water","Pressure, supply hours, hot water"],["Electricity","Power cuts, sockets, backup"],["Wi-Fi","Speed and stability"],["Bathroom","Hygiene, leaks, privacy"],["Food","Taste, hygiene, variety"],["Noise","Street, neighbours, curfew"],["Security","Locks, CCTV, visitor control"]];
+const PR=["Water supply (as promised)","Wi-Fi (as promised)","Furnished room (as promised)","Food (as promised)"];
+const PGS=[
+{id:1,name:"S V Luxury Hostel & PG",loc:"Mandadam / Velgapudi"},
+{id:2,name:"SV Boys Hostel",loc:"Inavolu"},
+{id:3,name:"Surya Boys Hostel",loc:"Inavolu"},
+{id:4,name:"Elite Homestay – Nirvana",loc:"Mandadam / Malkapuram"},
+{id:5,name:"Sree Nivasam Boys & Working Men’s Hostel",loc:"Velagapudi"},
+{id:6,name:"Veda Boys Hostel",loc:"Inavolu Road"},
+{id:7,name:"RRR PG Hostel",loc:"Kuragallu / Malkapuram Road"}].map(p=>({...p,pr:PR}));
+let S;
+function fresh(){S={pg:null,ans:{},prom:{},photos:[],cost:{},scr:1};render();scrollTo(0,0)}
+function go(n){if(n>1&&n<6&&!S.pg)n=1;S.scr=n;render();scrollTo(0,0)}
+function keep(){const y=scrollY;render();scrollTo(0,y)}
+function render(){
+ $("#m").innerHTML=[s1,s2,s3,s4,s5,s6][S.scr-1]();
+ $("#nav").innerHTML=["PGs","Audit","Cost","Promises","Report","Saved"].map((l,i)=>`<button class="${S.scr==i+1?"on":""}" onclick="go(${i+1})" ${S.scr==i+1?'aria-current="page"':""}><span>${i+1}</span>${l}</button>`).join("");
+ if(S.scr==3)calcUI();if(S.scr==4)drawPh();if(S.scr==6)loadList();
+}
+const head=(t,s)=>`<h2>${t}</h2><p class="mut">${s}</p>`;
+const pgBar=()=>`<div class="card pgbar"><b>${S.pg.name}</b> <span class="mut">${S.pg.loc}</span></div>`;
+const nav2=(b,l,n)=>`<div class="row nav2"><button class="btn sec" onclick="go(${b})">Back</button><button class="btn" id="cont" onclick="go(${n})">${l}</button></div>`;
+function pick(id){const p=PGS.find(x=>x.id===id);if(!S.pg||S.pg.id!==id){S.pg=p;S.ans={};S.prom={};S.photos=[];S.cost={rent:"",dep:"",food:"",elec:"",other:""};S.id="a"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.date=new Date().toISOString()}go(2)}
+function s1(){return head("Select a PG near VIT-AP","Seven places around VIT-AP University, Amaravati.")+`<div class="alert"><b>Preliminary directory.</b> Names and areas are listed to help you start looking. Rent, deposit and facilities haven’t been verified. Check everything with the owner and visit in person before you pay anything.</div>`+PGS.map(p=>`<div class="card"><h3>${p.name}</h3><div class="mut">${p.loc}</div><div class="two"><div><small>Rent</small><b>Rent not verified</b></div><div><small>Deposit</small><b>Deposit not verified</b></div></div><div class="mut small">Facilities to be verified</div><button class="btn full" onclick="pick(${p.id})">Run PG Audit</button></div>`).join("")+`<p class="mut small">Listings are a starting point, not an endorsement. Nothing leaves this browser unless you export or share it.</p>`}
+function s2(){const n=Object.keys(S.ans).length;return head("Run a PG audit","Rate what you see on your visit. Leave out anything you couldn’t check. Tap a chosen answer again to clear it.")+pgBar()+`<div class="card"><small>Listing details</small><div class="small">Rent not verified</div><div class="small">Deposit not verified</div><div class="small mut">Facilities to be verified</div></div>`+CH.map((c,i)=>`<div class="card"><b>${i+1}. ${c[0]}</b><div class="mut small">${c[1]}</div><div class="seg row">${[["g","Good"],["a","Average"],["p","Poor"]].map(([k,l])=>`<button class="${S.ans[i]===k?"on "+k:""}" aria-pressed="${S.ans[i]===k}" onclick="setA(${i},'${k}')">${l}</button>`).join("")}</div></div>`).join("")+`<p class="mut small">${n} of 10 checks answered</p><button class="btn sec full" onclick="demo()">Fill sample audit</button>`+nav2(1,"Continue",3)}
+function setA(i,k){if(S.ans[i]===k)delete S.ans[i];else S.ans[i]=k;keep()}
+function demo(){S.ans={0:"g",1:"a",2:"g",3:"p",4:"a",5:"g",6:"a",7:"a",8:"p",9:"g"};S.prom={0:"x",1:"m",2:"m",3:"n"};keep()}
+const CF=[["rent","Monthly rent"],["dep","Deposit (one-time)"],["food","Monthly food cost"],["elec","Monthly electricity cost"],["other","Other monthly charges"]];
+function s3(){return head("Actual cost calculator","Advertised rent is rarely the whole bill. Change the numbers to match what the owner tells you.")+pgBar()+`<div class="card">`+CF.map(([k,l])=>`<label for="f_${k}">${l}</label><div class="inp"><span>₹</span><input type="number" min="0" step="any" inputmode="decimal" id="f_${k}" value="${S.cost[k]==="x"?"":S.cost[k]}" oninput="cin('${k}',this)" placeholder="0"></div><div class="err" id="e_${k}"></div>`).join("")+`</div><div id="res"></div>`+nav2(2,"Continue",4)}
+function cin(k,el){S.cost[k]=el.validity.badInput?"x":el.value;calcUI()}
+function calc(){const e={},n={};CF.forEach(([k])=>{const v=String(S.cost[k]).trim();if(v===""){n[k]=0;return}const x=Number(v);if(!isFinite(x)||x<0)e[k]=1;else n[k]=x});const ok=!Object.keys(e).length;return{e,n,ok,none:CF.every(([k])=>String(S.cost[k]).trim()===""),m:ok?n.rent+n.food+n.elec+n.other:0}}
+function calcUI(){const{e,n,ok,m,none}=calc();
+ CF.forEach(([k])=>{$("#e_"+k).textContent=e[k]?"Enter a plain number that is 0 or more, like 9500.":"";$("#f_"+k).parentElement.classList.toggle("bad",!!e[k])});
+ const d=m-S.pg.rent;
+ $("#res").innerHTML=ok&&none?`<div class="alert">Enter the rent, deposit and other costs the owner quotes. Totals appear here. Nothing is filled in for you.</div>`:ok?`<div class="card"><small>Total actual monthly cost</small><div class="num">${inr(m)}</div><div class="mut small">Rent ${inr(n.rent)} + food ${inr(n.food)} + electricity ${inr(n.elec)} + other ${inr(n.other)}</div>${d>0?`<div class="small" style="margin-top:6px;color:var(--red)">That’s ${inr(d)} more every month than the advertised rent.</div>`:""}</div><div class="card"><div class="line"><span>One-time deposit (paid upfront)</span><b>${inr(n.dep)}</b></div><div class="line"><span>First month’s actual cost</span><b>${inr(m)}</b></div><div class="line tot"><span>Total initial payment</span><b>${inr(n.dep+m)}</b></div></div><p class="mut small">Empty fields count as ₹0.</p>`:`<div class="alert">Fix the highlighted fields to see your totals.</div>`;
+ $("#cont").disabled=!ok}
+function s4(){return head("Advertised promises vs reality","Common promises to check. Compare each with what the owner or listing told you and what you actually saw. None of this is verified.")+pgBar()+S.pg.pr.map((t,i)=>`<div class="card"><b>${t}</b><div class="seg row">${[["m","Match","g"],["x","Mismatch","p"],["n","Not checked","n"]].map(([k,l,c])=>`<button class="${(S.prom[i]||"n")===k?"on "+c:""}" aria-pressed="${(S.prom[i]||"n")===k}" onclick="setP(${i},'${k}')">${l}</button>`).join("")}</div></div>`).join("")+`<div class="card"><b>Photo evidence</b> <span class="mut">(optional, up to 3)</span><p class="mut small">Photos are compressed and stay in this browser tab. Nothing is uploaded.</p><input type="file" accept="image/*" multiple id="pf" onchange="addPh(this)"><div id="ph"></div><div class="err" id="pe"></div></div>`+nav2(3,"Generate report",5)}
+function setP(i,k){S.prom[i]=k;keep()}
+function comp(f){return new Promise(r=>{const fr=new FileReader();fr.onerror=()=>r(null);fr.onload=e=>{const im=new Image();im.onerror=()=>r(null);im.onload=()=>{const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);r(c.toDataURL("image/jpeg",.7))};im.src=e.target.result};fr.readAsDataURL(f)})}
+async function addPh(el){const er=$("#pe");er.textContent="";const room=3-S.photos.length,fs=[...el.files].filter(f=>f.type.startsWith("image/"));if(fs.length>room)er.textContent="You can attach 3 photos at most, so the extras were skipped.";let bad=0;for(const f of fs.slice(0,room)){const d=await comp(f);if(d&&S.photos.length<3)S.photos.push(d);else if(!d)bad++}el.value="";if(bad&&$("#pe"))$("#pe").textContent="One photo couldn’t be read. Try a JPG or PNG.";drawPh()}
+function rmPh(i){S.photos.splice(i,1);$("#pe").textContent="";drawPh()}
+function drawPh(){if(!$("#ph"))return;$("#ph").innerHTML=S.photos.map((p,i)=>`<div class="th"><img src="${p}" alt="Evidence photo ${i+1}"><button onclick="rmPh(${i})" aria-label="Remove photo ${i+1}">✕</button></div>`).join("")+`<div class="mut small" style="margin-top:8px">${S.photos.length} of 3 photos added</div>`;$("#pf").disabled=S.photos.length>=3}
+function s5(){
+ const{n,cnt,sc,pr,W,c}=rep();
+ const col=sc===null?"var(--mut)":sc>=7.5?"var(--ok)":sc>=5?"var(--warn)":"var(--red)";
+ const pc=k=>pr.filter(x=>x[1]===k).length,L={m:"Match",x:"Mismatch",n:"Not checked"};
+ return head("Checkitz Reality Card","A summary of your own audit.")+
+ `<div class="card" style="text-align:center"><h3>${S.pg.name}</h3><div class="mut small">${S.pg.loc}</div>`+
+ (sc===null?`<div class="alert" style="text-align:left;margin-top:12px">Not enough data to calculate a score. <a href="#" onclick="go(2);return false" style="color:var(--red)">Answer some audit checks</a> to get one.</div>`:`<div class="ring" style="--p:${sc*10};--c:${col}"><div><span><b>${sc.toFixed(1)}</b>out of 10</span></div></div>`)+
+ `<div class="mut small">A simple Checkitz score based on your own answers. It is not a verified certification.</div></div>`+
+ `<div class="card"><b>Audit results</b><div class="cnt" style="margin-top:8px"><div><b style="color:var(--ok)">${cnt.g}</b>Good</div><div><b style="color:var(--warn)">${cnt.a}</b>Average</div><div><b style="color:var(--red)">${cnt.p}</b>Poor</div></div><div class="mut small" style="margin:6px 0">${10-n} of 10 checks left unanswered and not counted.</div>${CH.map((c,i)=>`<div class="pr"><span>${c[0]}</span><span class="pill ${S.ans[i]||"n"}">${{g:"Good",a:"Average",p:"Poor"}[S.ans[i]]||"Not answered"}</span></div>`).join("")}</div>`+
+ `<div class="card"><b>Costs</b>`+(c.ok&&c.none?`<div class="alert">No costs entered yet. <a href="#" onclick="go(3);return false" style="color:var(--red)">Enter costs</a> to see totals.</div>`:c.ok?`<div class="line"><span>Actual monthly cost</span><b>${inr(c.m)}</b></div><div class="line"><span>One-time deposit</span><b>${inr(c.n.dep)}</b></div><div class="line tot"><span>Initial payment</span><b>${inr(c.n.dep+c.m)}</b></div>`:`<div class="alert">Some cost fields have errors. <a href="#" onclick="go(3);return false" style="color:var(--red)">Fix them</a>.</div>`)+`</div>`+
+ `<div class="card"><b>Advertised promises</b><div class="cnt" style="margin:8px 0"><div><b style="color:var(--ok)">${pc("m")}</b>Matched</div><div><b style="color:var(--red)">${pc("x")}</b>Mismatched</div><div><b>${pc("n")}</b>Not checked</div></div>${pr.map(([t,k])=>`<div class="pr"><span>${t}</span><span class="pill ${k}">${L[k]}</span></div>`).join("")}</div>`+
+ `<div class="card"><b>Warnings</b>${W.length?W.map(w=>`<div class="alert">${w}</div>`).join(""):`<div class="alert good">${n||pc("m")+pc("x")?"No mismatches or Poor ratings among the items you checked.":"Nothing checked yet, so there are no warnings."}</div>`}${pc("n")?`<div class="mut small">${pc("n")} promise${pc("n")>1?"s":""} not checked yet.</div>`:""}<div class="mut small" style="margin-top:8px">This is a simple summary of your own answers, not a certified inspection. Always verify key details with the owner before you pay.</div></div>`+
+ (S.photos.length?`<div class="card"><b>Photo evidence</b><div>${S.photos.map((p,i)=>`<div class="th"><img src="${p}" alt="Evidence photo ${i+1}"></div>`).join("")}</div></div>`:"")+
+ `<div class="card"><div class="row wrap"><button class="btn" id="bs" onclick="saveA()">Save Audit</button><button class="btn sec" onclick="pdf(0)">Download PDF</button><button class="btn sec" onclick="pdf(1)">Share Report</button></div><div id="st" class="small" role="status" style="margin-top:8px"></div><div class="mut small">Saved audits stay in this browser only. They don’t sync to other devices and are lost if you clear browser data. Sharing never uploads anything on its own.</div></div><div class="row wrap nav2"><button class="btn sec" onclick="go(2)">Edit audit</button><button class="btn sec" onclick="go(3)">Edit costs</button><button class="btn sec" onclick="go(4)">Edit promises</button></div><button class="btn full" onclick="fresh()">Start New Audit</button>`}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fd=d=>new Date(d).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+const msg=(t,e)=>{const x=$("#st");if(x){x.textContent=t;x.style.color=e?"var(--red)":"var(--ok)"}};
+const dErr=e=>e&&e.code==="declined"?"Download cancelled.":"Couldn’t finish: "+((e&&e.message)||"unknown error")+".";
+const DB={open(){return this.p||(this.p=new Promise((ok,no)=>{const r=indexedDB.open("checkitz",1);r.onupgradeneeded=()=>r.result.createObjectStore("audits",{keyPath:"id"});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))},
+ async tx(m,f){const db=await this.open();return new Promise((ok,no)=>{const t=db.transaction("audits",m),q=f(t.objectStore("audits"));t.oncomplete=()=>ok(q.result);t.onerror=t.onabort=()=>no(t.error)})},
+ put(r){return this.tx("readwrite",s=>s.put(r))},get(i){return this.tx("readonly",s=>s.get(i))},all(){return this.tx("readonly",s=>s.getAll())},del(i){return this.tx("readwrite",s=>s.delete(i))}};
+function rep(){const A=Object.values(S.ans),n=A.length,cnt={g:0,a:0,p:0};A.forEach(k=>cnt[k]++);
+ const sc=n?Math.round((cnt.g*10+cnt.a*5)*10/n)/10:null,pr=S.pg.pr.map((t,i)=>[t,S.prom[i]||"n"]),W=[];
+ pr.forEach(([t,k])=>{if(k==="x")W.push(`Promise not kept: “${t}” didn’t match what you saw.`)});
+ Object.keys(S.ans).forEach(i=>{if(S.ans[i]==="p")W.push(`Poor rating for ${CH[i][0].toLowerCase()}.`)});
+ return{n,cnt,sc,pr,W,c:calc()}}
+function rec(){const R=rep();return{id:S.id,v:1,pgId:S.pg.id,pgName:S.pg.name,pgLoc:S.pg.loc,date:S.date,ans:S.ans,cost:S.cost,prom:S.prom,photos:S.photos,score:R.sc,monthly:R.c.ok&&!R.c.none?R.c.m:null,warnings:R.W,saved:Date.now()}}
+function recFrom(st){const k=S;S=st;try{return rec()}finally{S=k}}
+function stOf(r){return{pg:PGS.find(p=>p.id===r.pgId),ans:r.ans,prom:r.prom,photos:r.photos,cost:r.cost,id:r.id,date:r.date}}
+const fname=st=>"checkitz-"+st.pg.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)+"-"+String(st.date).slice(0,10);
+async function fileSave(name,blob){const d=window.claude&&await window.claude.use("downloads");if(!d)throw new Error("Downloads aren’t available in this view");await d.save({filename:name,data:blob})}
+let busy=0;
+async function saveA(){if(busy)return;if(!calc().ok){msg("Fix the cost errors before saving.",1);return}
+ busy=1;const b=$("#bs");if(b)b.disabled=true;
+ try{await DB.put(rec());msg("Saved in this browser. Saving again updates the same record.")}catch(e){msg("Couldn’t save: "+((e&&e.message)||"browser storage isn’t available")+".",1)}
+ busy=0;if($("#bs"))$("#bs").disabled=false}
+function s6(){return head("My Saved Audits","Audits you’ve saved in this browser.")+`<div class="alert">Saved audits stay in this browser only. They aren’t synced to other devices and are lost if you clear your browser data. Export a backup to keep a copy.</div><div id="st" class="small" role="status"></div><div id="sl" class="mut">Loading…</div><div class="card"><b>Restore from backup</b><p class="mut small">Choose a Checkitz backup file (.json). It’s checked before anything is saved.</p><input type="file" accept=".json,application/json" onchange="imp(this)"></div>`}
+async function loadList(){const el=$("#sl");if(!el)return;
+ try{const a=(await DB.all()).sort((x,y)=>y.saved-x.saved);
+  el.innerHTML=a.length?a.map(r=>`<div class="card"><b>${esc(r.pgName)}</b><div class="mut small">${esc(r.pgLoc)}, audited ${fd(r.date)}</div><div class="two"><div><small>Score</small><b>${r.score===null?"Not enough data":r.score.toFixed(1)+" out of 10"}</b></div><div><small>Actual monthly cost</small><b>${r.monthly===null?"Not entered":inr(r.monthly)}</b></div></div>`+(S.del===r.id?`<div class="alert">Delete this saved audit? This can’t be undone.</div><div class="row"><button class="btn" onclick="delOk('${r.id}')">Yes, delete</button><button class="btn sec" onclick="S.del=0;loadList()">Cancel</button></div>`:`<div class="row wrap"><button class="btn" onclick="openA('${r.id}')">Open</button><button class="btn sec" onclick="dlA('${r.id}')">Download PDF</button><button class="btn sec" onclick="expA('${r.id}')">Export backup</button><button class="btn sec" onclick="delA('${r.id}')">Delete</button></div>`)+`</div>`).join(""):`<div class="card">No saved audits yet. Finish an audit and tap Save Audit on the Reality Card.</div>`}
+ catch(e){el.innerHTML=`<div class="alert">Couldn’t read saved audits: ${esc((e&&e.message)||"storage isn’t available")}.</div>`}}
+async function openA(id){try{const r=await DB.get(id);if(!r)throw new Error("record not found");S=stOf(r);go(5)}catch(e){msg("Couldn’t open: "+e.message,1)}}
+function delA(id){S.del=id;loadList()}
+async function delOk(id){try{await DB.del(id);S.del=0;msg("Deleted.")}catch(e){msg("Couldn’t delete: "+((e&&e.message)||"unknown error")+".",1)}loadList()}
+async function dlA(id){try{const r=await DB.get(id);if(!r)throw new Error("record not found");await pdf(0,stOf(r))}catch(e){msg("Couldn’t open that record: "+e.message,1)}}
+async function expA(id){try{const r=await DB.get(id);if(!r)throw new Error("record not found");await fileSave(fname(stOf(r))+".json",new Blob([JSON.stringify({app:"checkitz",version:1,exported:new Date().toISOString(),audit:r})],{type:"application/json"}));msg("Backup file ready.")}catch(e){msg(dErr(e),1)}}
+function vld(o){const a=o&&o.audit,bad=m=>{throw new Error(m)};
+ if(!o||o.app!=="checkitz"||!a||typeof a!=="object")bad("this isn’t a Checkitz backup file");
+ const pg=PGS.find(p=>p.id===a.pgId);if(!pg)bad("the backup names a PG that isn’t in this directory");
+ if(typeof a.id!=="string"||!/^[\w-]{1,40}$/.test(a.id))bad("the record ID is invalid");
+ if(typeof a.date!=="string"||isNaN(Date.parse(a.date)))bad("the audit date is invalid");
+ const ans={},prom={},cost={};
+ for(const[k,v]of Object.entries(a.ans||{})){if(!/^[0-9]$/.test(k)||typeof v!=="string"||v.length!==1||!"gap".includes(v))bad("an inspection answer is invalid");ans[k]=v}
+ for(const[k,v]of Object.entries(a.prom||{})){if(!/^[0-3]$/.test(k)||!["m","x","n"].includes(v))bad("a promise status is invalid");prom[k]=v}
+ for(const[k]of CF){const v=a.cost&&a.cost[k];if(v===undefined||v===null||v==="")cost[k]="";else{const x=Number(v);if(typeof v==="boolean"||!isFinite(x)||x<0)bad("a cost value is invalid");cost[k]=String(v)}}
+ const ph=a.photos===undefined?[]:a.photos;
+ if(!Array.isArray(ph)||ph.length>3||ph.some(p=>typeof p!=="string"||!/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(p)))bad("the photos are invalid or there are more than 3");
+ return{pg,ans,prom,cost,photos:ph,id:a.id,date:a.date}}
+async function imp(el){const f=el.files[0];el.value="";if(!f)return;
+ try{if(f.size>30e6)throw new Error("the file is too large to be a Checkitz backup");
+  const txt=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(new Error("the file couldn’t be read"));r.readAsText(f)});
+  let o;try{o=JSON.parse(txt)}catch{throw new Error("the file isn’t valid JSON")}
+  const st=vld(o);await DB.put(recFrom(st));msg(`Restored “${st.pg.name}” from ${fd(st.date)}.`);loadList()}
+ catch(e){msg("Couldn’t restore: "+e.message+".",1)}}
+const dim=u=>new Promise(r=>{const i=new Image();i.onload=()=>r([i.width||4,i.height||3]);i.onerror=()=>r([4,3]);i.src=u});
+async function mkPdf(st){
+ const J=window.jspdf;if(!J)throw new Error("the PDF library didn’t load. Check your connection and reload the page");
+ const k=S;let R;S=st;try{R=rep()}finally{S=k}
+ const c=R.c,d=new J.jsPDF({unit:"mm",format:"a4"}),P=t=>String(t).replace(/[“”]/g,'"').replace(/[’‘]/g,"'").replace(/[–—]/g,"-"),Rs=n=>"Rs "+Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
+ const NV=[20,33,61],RD=[230,57,70],GN=[31,138,76],AM=[194,124,14],GY=[110,118,135];let y=0;
+ const room=h=>{if(y+h>278){d.addPage();y=18}};
+ const T=(t,x,sz,w,col,al)=>{d.setFont("helvetica",w||"normal");d.setFontSize(sz||10);d.setTextColor(...(col||NV));d.text(P(t),x,y,al?{align:"right"}:undefined)};
+ const H=t=>{room(16);y+=8;T(t,16,12,"bold");y+=2.5;d.setDrawColor(223,227,234);d.line(16,y,194,y);y+=6};
+ const L=(a,b,col,bold)=>{room(7);T(a,16,10,bold?"bold":"normal");T(b,194,10,"bold",col,1);y+=6.5};
+ const Wp=(t,col,sz)=>{d.setFont("helvetica","normal");d.setFontSize(sz||10);d.setTextColor(...(col||NV));d.splitTextToSize(P(t),178).forEach(l=>{room(6);d.text(l,16,y);y+=5})};
+ d.setFillColor(...NV);d.rect(0,0,210,26,"F");y=16;T("Checkitz",16,22,"bold",[255,255,255]);T("Reality Card",194,11,"normal",[255,255,255],1);
+ y=38;T(st.pg.name,16,16,"bold");y+=6.5;T(st.pg.loc,16,11,"normal",GY);y+=6;T("Audit date: "+fd(st.date),16,10,"normal",GY);y+=2;
+ H("Checkitz score");
+ const sc=R.sc;T(sc===null?"Not enough data to calculate a score":sc.toFixed(1)+" out of 10",16,sc===null?12:20,"bold",sc===null?AM:sc>=7.5?GN:sc>=5?AM:RD);y+=7;
+ Wp("A simple Checkitz score based on the user's own answers. It is not a verified certification or inspection.",GY,9);
+ Wp(`Good: ${R.cnt.g}    Average: ${R.cnt.a}    Poor: ${R.cnt.p}    Unanswered: ${10-R.n}`);
+ H("Inspection ratings");
+ const RT={g:["Good",GN],a:["Average",AM],p:["Poor",RD]};
+ CH.forEach((x,i)=>{const r=RT[st.ans[i]]||["Not answered",GY];L(`${i+1}. ${x[0]}`,r[0],r[1])});
+ H("Costs");
+ if(c.none||!c.ok)Wp("Costs were not entered.",GY);
+ else{[["Rent",c.n.rent],["Food",c.n.food],["Electricity",c.n.elec],["Other monthly charges",c.n.other]].forEach(([a,v])=>L(a,Rs(v),NV));
+  L("Actual monthly cost (excludes deposit)",Rs(c.m),NV,1);L("One-time deposit (paid upfront)",Rs(c.n.dep),NV);L("Initial payment (deposit + first month)",Rs(c.n.dep+c.m),RD,1)}
+ H("Advertised promises vs reality");
+ const PS={m:["Match",GN],x:["Mismatch",RD],n:["Not checked",GY]};R.pr.forEach(([t,v])=>L(t,PS[v][0],PS[v][1]));
+ H("Warnings");
+ if(R.W.length)R.W.forEach(w=>Wp("- "+w,RD));else Wp(R.n||R.pr.some(x=>x[1]!=="n")?"No mismatches or Poor ratings among the items checked.":"Nothing checked yet, so there are no warnings.");
+ if(st.photos.length){H("Photo evidence");room(62);for(let i=0;i<st.photos.length;i++){const[w,h]=await dim(st.photos[i]),q=Math.min(56/w,56/h);d.addImage(st.photos[i],"JPEG",16+i*61,y,w*q,h*q)}y+=60}
+ const N=d.getNumberOfPages();for(let i=1;i<=N;i++){d.setPage(i);d.setFontSize(8);d.setFont("helvetica","normal");d.setTextColor(...GY);d.text("Checkitz is a simple score from your own answers, not a verified certification or inspection. Made on your device.",16,290);d.text(`Page ${i} of ${N}`,194,290,{align:"right"})}
+ return d.output("blob")}
+async function pdf(share,st){st=st||S;if(!st.pg)return;
+ if(st===S&&!calc().ok){msg("Fix the cost errors before making a PDF.",1);return}
+ msg("Preparing the PDF…");
+ try{const b=await mkPdf(st),name=fname(st)+".pdf";let fb="";
+  if(share){try{const f=new File([b],name,{type:"application/pdf"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Checkitz report"});msg("Report shared.");return}}catch(e){if(e&&e.name==="AbortError"){msg("Sharing cancelled.");return}}fb=" Sharing files isn’t supported here, so it was offered as a download instead."}
+  await fileSave(name,b);msg("PDF saved: "+name+"."+fb)}
+ catch(e){msg("Couldn’t create or save the PDF: "+dErr(e).replace("Couldn’t finish: ","")+"",1)}}
+fresh();
+</script></body></html>
