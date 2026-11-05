@@ -1,213 +1,1891 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-<title>Checkitz – Audit a PG before you pay</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Checkitz — Luxury PG Audit & Reality Intelligence</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap">
-<style>
-:root{--bg:#fff;--ink:#14213d;--mut:#5b6478;--card:#f3f4f7;--line:#dfe3ea;--red:#e63946;--redbg:#fde8ea;--ok:#1f8a4c;--okbg:#e3f5ea;--warn:#c27c0e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1626;--ink:#eef1f8;--mut:#9aa5bd;--card:#192138;--line:#2a3452;--red:#ff6470;--redbg:#3a1d26;--ok:#4cc38a;--okbg:#14301f;--warn:#e0a040}}
-:root[data-theme="dark"]{--bg:#0f1626;--ink:#eef1f8;--mut:#9aa5bd;--card:#192138;--line:#2a3452;--red:#ff6470;--redbg:#3a1d26;--ok:#4cc38a;--okbg:#14301f;--warn:#e0a040}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px}
-.hd{max-width:640px;margin:auto;display:flex;align-items:center;gap:10px}
-.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:22px;letter-spacing:-.5px}.logo b{color:var(--red)}
-.tag{margin-left:auto;font-size:12px;color:var(--mut)}@media(max-width:420px){.tag{display:none}}@media(max-width:360px){.two{flex-direction:column;gap:8px}}
-.bld{fill:var(--ink)}.bld2{fill:var(--red)}.win{fill:var(--bg)}
-main{max-width:640px;margin:auto;padding:8px 16px 110px}
-h2{font-size:24px;letter-spacing:-.5px;margin:14px 0 4px}h3{margin:0 0 4px;font-size:18px}
-.mut{color:var(--mut)}.small{font-size:14px}small{color:var(--mut);display:block;font-size:13px}
-.card{background:var(--card);border-radius:18px;padding:16px;margin:14px 0}
-.pgbar{background:var(--redbg);padding:10px 14px}
-.two{display:flex;gap:12px;margin:10px 0}.two>div{flex:1;background:var(--bg);border-radius:12px;padding:8px 10px}
-.chip{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:12px;margin:2px 4px 2px 0}
-.btn{border:0;border-radius:14px;padding:13px 16px;min-height:50px;font:600 16px inherit;font-family:inherit;cursor:pointer;background:var(--red);color:#fff}
-.btn.sec{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
-.btn:disabled{opacity:.4;cursor:not-allowed}.full{width:100%;margin-top:10px}
-.row{display:flex;gap:8px}.row>*{flex:1}
-.nav2{margin-top:20px}.wrap{flex-wrap:wrap}.wrap>*{flex:1 1 130px}
-.seg{margin-top:12px}
-.seg button{padding:10px 4px;min-height:46px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;font:600 15px inherit;font-family:inherit;cursor:pointer}
-.seg button.on{color:#fff;border-color:transparent}
-.on.g{background:var(--ok)}.on.a{background:var(--warn)}.on.p{background:var(--red)}.on.n{background:var(--ink);color:var(--bg)!important}
-label{display:block;font-weight:600;margin:10px 0 0}
-.inp{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);padding:0 12px;margin-top:4px}
-.inp.bad{border-color:var(--red)}
-.inp input{border:0;outline:0;background:transparent;color:var(--ink);font:600 16px inherit;font-family:inherit;padding:12px 6px;width:100%}
-.err{color:var(--red);font-size:13px;min-height:0}
-.num{font-size:34px;font-weight:800;letter-spacing:-1px}
-.line{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}.line:last-child{border:0}
-.tot{font-size:17px;font-weight:800}
-.alert{background:var(--redbg);border-left:4px solid var(--red);padding:10px 12px;border-radius:10px;margin:8px 0;font-size:14px}
-.alert.good{background:var(--okbg);border-left-color:var(--ok)}
-.th{position:relative;display:inline-block;margin:8px 8px 0 0}.th img{width:100px;height:100px;object-fit:cover;border-radius:14px;display:block}
-.th button{position:absolute;top:-6px;right:-6px;width:26px;height:26px;border-radius:50%;border:0;background:var(--red);color:#fff;cursor:pointer}
-.ring{width:150px;height:150px;border-radius:50%;margin:10px auto;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0)}
-.ring div{width:118px;height:118px;border-radius:50%;background:var(--bg);display:grid;place-items:center;text-align:center;font-size:12px;color:var(--mut);line-height:1.1}
-.ring b{display:block;font-size:38px;color:var(--ink);letter-spacing:-1px}
-.cnt{display:flex;gap:8px;text-align:center}.cnt>div{flex:1;border-radius:12px;padding:8px 4px;background:var(--bg)}.cnt b{display:block;font-size:22px}
-.pill{font-size:12px;font-weight:600;border-radius:99px;padding:2px 10px;color:#fff;white-space:nowrap}
-.pill.m,.pill.g{background:var(--ok)}.pill.a{background:var(--warn)}.pill.p{background:var(--red)}.pill.x{background:var(--red)}.pill.n{background:var(--mut)}
-.pr{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.pr:last-child{border:0}
-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
-nav div{max-width:640px;margin:auto;display:flex}
-nav button{flex:1;border:0;background:none;color:var(--mut);padding:8px 2px 10px;min-height:58px;font:600 12px inherit;font-family:inherit;cursor:pointer}
-nav button span{display:block;width:26px;height:26px;line-height:26px;margin:0 auto 2px;border-radius:50%;background:var(--card);font-size:13px}
-nav button.on{color:var(--red)}nav button.on span{background:var(--red);color:#fff}
-button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-offset:2px}
-</style></head><body>
-<header><div class="hd"><div class="logo"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="bld" x="3" y="5" width="16" height="23" rx="3"/><rect class="bld2" x="16" y="12" width="13" height="16" rx="3"/><g class="win"><rect x="7" y="9" width="3" height="3" rx=".7"/><rect x="12" y="9" width="3" height="3" rx=".7"/><rect x="7" y="15" width="3" height="3" rx=".7"/><rect x="12" y="15" width="3" height="3" rx=".7"/><rect x="20" y="17" width="3" height="3" rx=".7"/><rect x="24" y="17" width="3" height="3" rx=".7"/></g></svg><span>Check<b>itz</b></span></div><span class="tag">Audit a PG before you pay</span></div></header>
-<main id="m"></main>
-<nav><div id="nav"></div></nav>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-const $=s=>document.querySelector(s);
-const inr=n=>"₹"+Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
-const CH=[["Cleanliness","Rooms, corridors, common areas"],["Ventilation","Airflow, windows, stuffiness"],["Room condition","Walls, bed, cupboard, fittings"],["Water","Pressure, supply hours, hot water"],["Electricity","Power cuts, sockets, backup"],["Wi-Fi","Speed and stability"],["Bathroom","Hygiene, leaks, privacy"],["Food","Taste, hygiene, variety"],["Noise","Street, neighbours, curfew"],["Security","Locks, CCTV, visitor control"]];
-const PR=["Water supply (as promised)","Wi-Fi (as promised)","Furnished room (as promised)","Food (as promised)"];
-const PGS=[
-{id:1,name:"S V Luxury Hostel & PG",loc:"Mandadam / Velgapudi"},
-{id:2,name:"SV Boys Hostel",loc:"Inavolu"},
-{id:3,name:"Surya Boys Hostel",loc:"Inavolu"},
-{id:4,name:"Elite Homestay – Nirvana",loc:"Mandadam / Malkapuram"},
-{id:5,name:"Sree Nivasam Boys & Working Men’s Hostel",loc:"Velagapudi"},
-{id:6,name:"Veda Boys Hostel",loc:"Inavolu Road"},
-{id:7,name:"RRR PG Hostel",loc:"Kuragallu / Malkapuram Road"}].map(p=>({...p,pr:PR}));
-let S;
-function fresh(){S={pg:null,ans:{},prom:{},photos:[],cost:{},scr:1};render();scrollTo(0,0)}
-function go(n){if(n>1&&n<6&&!S.pg)n=1;S.scr=n;render();scrollTo(0,0)}
-function keep(){const y=scrollY;render();scrollTo(0,y)}
-function render(){
- $("#m").innerHTML=[s1,s2,s3,s4,s5,s6][S.scr-1]();
- $("#nav").innerHTML=["PGs","Audit","Cost","Promises","Report","Saved"].map((l,i)=>`<button class="${S.scr==i+1?"on":""}" onclick="go(${i+1})" ${S.scr==i+1?'aria-current="page"':""}><span>${i+1}</span>${l}</button>`).join("");
- if(S.scr==3)calcUI();if(S.scr==4)drawPh();if(S.scr==6)loadList();
+
+<style>
+:root {
+  --bg: #0b0f17;
+  --surface: #121824;
+  --surface-card: #182030;
+  --surface-elevated: #222d42;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --gold: #d4a373;
+  --gold-glow: rgba(212, 163, 115, 0.2);
+  --text-primary: #f0f3f8;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --ok: #2ecc71;
+  --ok-bg: rgba(46, 204, 113, 0.12);
+  --warn: #e0a040;
+  --warn-bg: rgba(224, 160, 64, 0.12);
+  --red: #ff5252;
+  --red-bg: rgba(255, 82, 82, 0.12);
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  --glass: rgba(18, 24, 36, 0.75);
 }
-const head=(t,s)=>`<h2>${t}</h2><p class="mut">${s}</p>`;
-const pgBar=()=>`<div class="card pgbar"><b>${S.pg.name}</b> <span class="mut">${S.pg.loc}</span></div>`;
-const nav2=(b,l,n)=>`<div class="row nav2"><button class="btn sec" onclick="go(${b})">Back</button><button class="btn" id="cont" onclick="go(${n})">${l}</button></div>`;
-function pick(id){const p=PGS.find(x=>x.id===id);if(!S.pg||S.pg.id!==id){S.pg=p;S.ans={};S.prom={};S.photos=[];S.cost={rent:"",dep:"",food:"",elec:"",other:""};S.id="a"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.date=new Date().toISOString()}go(2)}
-function s1(){return head("Select a PG near VIT-AP","Seven places around VIT-AP University, Amaravati.")+`<div class="alert"><b>Preliminary directory.</b> Names and areas are listed to help you start looking. Rent, deposit and facilities haven’t been verified. Check everything with the owner and visit in person before you pay anything.</div>`+PGS.map(p=>`<div class="card"><h3>${p.name}</h3><div class="mut">${p.loc}</div><div class="two"><div><small>Rent</small><b>Rent not verified</b></div><div><small>Deposit</small><b>Deposit not verified</b></div></div><div class="mut small">Facilities to be verified</div><button class="btn full" onclick="pick(${p.id})">Run PG Audit</button></div>`).join("")+`<p class="mut small">Listings are a starting point, not an endorsement. Nothing leaves this browser unless you export or share it.</p>`}
-function s2(){const n=Object.keys(S.ans).length;return head("Run a PG audit","Rate what you see on your visit. Leave out anything you couldn’t check. Tap a chosen answer again to clear it.")+pgBar()+`<div class="card"><small>Listing details</small><div class="small">Rent not verified</div><div class="small">Deposit not verified</div><div class="small mut">Facilities to be verified</div></div>`+CH.map((c,i)=>`<div class="card"><b>${i+1}. ${c[0]}</b><div class="mut small">${c[1]}</div><div class="seg row">${[["g","Good"],["a","Average"],["p","Poor"]].map(([k,l])=>`<button class="${S.ans[i]===k?"on "+k:""}" aria-pressed="${S.ans[i]===k}" onclick="setA(${i},'${k}')">${l}</button>`).join("")}</div></div>`).join("")+`<p class="mut small">${n} of 10 checks answered</p><button class="btn sec full" onclick="demo()">Fill sample audit</button>`+nav2(1,"Continue",3)}
-function setA(i,k){if(S.ans[i]===k)delete S.ans[i];else S.ans[i]=k;keep()}
-function demo(){S.ans={0:"g",1:"a",2:"g",3:"p",4:"a",5:"g",6:"a",7:"a",8:"p",9:"g"};S.prom={0:"x",1:"m",2:"m",3:"n"};keep()}
-const CF=[["rent","Monthly rent"],["dep","Deposit (one-time)"],["food","Monthly food cost"],["elec","Monthly electricity cost"],["other","Other monthly charges"]];
-function s3(){return head("Actual cost calculator","Advertised rent is rarely the whole bill. Change the numbers to match what the owner tells you.")+pgBar()+`<div class="card">`+CF.map(([k,l])=>`<label for="f_${k}">${l}</label><div class="inp"><span>₹</span><input type="number" min="0" step="any" inputmode="decimal" id="f_${k}" value="${S.cost[k]==="x"?"":S.cost[k]}" oninput="cin('${k}',this)" placeholder="0"></div><div class="err" id="e_${k}"></div>`).join("")+`</div><div id="res"></div>`+nav2(2,"Continue",4)}
-function cin(k,el){S.cost[k]=el.validity.badInput?"x":el.value;calcUI()}
-function calc(){const e={},n={};CF.forEach(([k])=>{const v=String(S.cost[k]).trim();if(v===""){n[k]=0;return}const x=Number(v);if(!isFinite(x)||x<0)e[k]=1;else n[k]=x});const ok=!Object.keys(e).length;return{e,n,ok,none:CF.every(([k])=>String(S.cost[k]).trim()===""),m:ok?n.rent+n.food+n.elec+n.other:0}}
-function calcUI(){const{e,n,ok,m,none}=calc();
- CF.forEach(([k])=>{$("#e_"+k).textContent=e[k]?"Enter a plain number that is 0 or more, like 9500.":"";$("#f_"+k).parentElement.classList.toggle("bad",!!e[k])});
- const d=m-S.pg.rent;
- $("#res").innerHTML=ok&&none?`<div class="alert">Enter the rent, deposit and other costs the owner quotes. Totals appear here. Nothing is filled in for you.</div>`:ok?`<div class="card"><small>Total actual monthly cost</small><div class="num">${inr(m)}</div><div class="mut small">Rent ${inr(n.rent)} + food ${inr(n.food)} + electricity ${inr(n.elec)} + other ${inr(n.other)}</div>${d>0?`<div class="small" style="margin-top:6px;color:var(--red)">That’s ${inr(d)} more every month than the advertised rent.</div>`:""}</div><div class="card"><div class="line"><span>One-time deposit (paid upfront)</span><b>${inr(n.dep)}</b></div><div class="line"><span>First month’s actual cost</span><b>${inr(m)}</b></div><div class="line tot"><span>Total initial payment</span><b>${inr(n.dep+m)}</b></div></div><p class="mut small">Empty fields count as ₹0.</p>`:`<div class="alert">Fix the highlighted fields to see your totals.</div>`;
- $("#cont").disabled=!ok}
-function s4(){return head("Advertised promises vs reality","Common promises to check. Compare each with what the owner or listing told you and what you actually saw. None of this is verified.")+pgBar()+S.pg.pr.map((t,i)=>`<div class="card"><b>${t}</b><div class="seg row">${[["m","Match","g"],["x","Mismatch","p"],["n","Not checked","n"]].map(([k,l,c])=>`<button class="${(S.prom[i]||"n")===k?"on "+c:""}" aria-pressed="${(S.prom[i]||"n")===k}" onclick="setP(${i},'${k}')">${l}</button>`).join("")}</div></div>`).join("")+`<div class="card"><b>Photo evidence</b> <span class="mut">(optional, up to 3)</span><p class="mut small">Photos are compressed and stay in this browser tab. Nothing is uploaded.</p><input type="file" accept="image/*" multiple id="pf" onchange="addPh(this)"><div id="ph"></div><div class="err" id="pe"></div></div>`+nav2(3,"Generate report",5)}
-function setP(i,k){S.prom[i]=k;keep()}
-function comp(f){return new Promise(r=>{const fr=new FileReader();fr.onerror=()=>r(null);fr.onload=e=>{const im=new Image();im.onerror=()=>r(null);im.onload=()=>{const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);r(c.toDataURL("image/jpeg",.7))};im.src=e.target.result};fr.readAsDataURL(f)})}
-async function addPh(el){const er=$("#pe");er.textContent="";const room=3-S.photos.length,fs=[...el.files].filter(f=>f.type.startsWith("image/"));if(fs.length>room)er.textContent="You can attach 3 photos at most, so the extras were skipped.";let bad=0;for(const f of fs.slice(0,room)){const d=await comp(f);if(d&&S.photos.length<3)S.photos.push(d);else if(!d)bad++}el.value="";if(bad&&$("#pe"))$("#pe").textContent="One photo couldn’t be read. Try a JPG or PNG.";drawPh()}
-function rmPh(i){S.photos.splice(i,1);$("#pe").textContent="";drawPh()}
-function drawPh(){if(!$("#ph"))return;$("#ph").innerHTML=S.photos.map((p,i)=>`<div class="th"><img src="${p}" alt="Evidence photo ${i+1}"><button onclick="rmPh(${i})" aria-label="Remove photo ${i+1}">✕</button></div>`).join("")+`<div class="mut small" style="margin-top:8px">${S.photos.length} of 3 photos added</div>`;$("#pf").disabled=S.photos.length>=3}
-function s5(){
- const{n,cnt,sc,pr,W,c}=rep();
- const col=sc===null?"var(--mut)":sc>=7.5?"var(--ok)":sc>=5?"var(--warn)":"var(--red)";
- const pc=k=>pr.filter(x=>x[1]===k).length,L={m:"Match",x:"Mismatch",n:"Not checked"};
- return head("Checkitz Reality Card","A summary of your own audit.")+
- `<div class="card" style="text-align:center"><h3>${S.pg.name}</h3><div class="mut small">${S.pg.loc}</div>`+
- (sc===null?`<div class="alert" style="text-align:left;margin-top:12px">Not enough data to calculate a score. <a href="#" onclick="go(2);return false" style="color:var(--red)">Answer some audit checks</a> to get one.</div>`:`<div class="ring" style="--p:${sc*10};--c:${col}"><div><span><b>${sc.toFixed(1)}</b>out of 10</span></div></div>`)+
- `<div class="mut small">A simple Checkitz score based on your own answers. It is not a verified certification.</div></div>`+
- `<div class="card"><b>Audit results</b><div class="cnt" style="margin-top:8px"><div><b style="color:var(--ok)">${cnt.g}</b>Good</div><div><b style="color:var(--warn)">${cnt.a}</b>Average</div><div><b style="color:var(--red)">${cnt.p}</b>Poor</div></div><div class="mut small" style="margin:6px 0">${10-n} of 10 checks left unanswered and not counted.</div>${CH.map((c,i)=>`<div class="pr"><span>${c[0]}</span><span class="pill ${S.ans[i]||"n"}">${{g:"Good",a:"Average",p:"Poor"}[S.ans[i]]||"Not answered"}</span></div>`).join("")}</div>`+
- `<div class="card"><b>Costs</b>`+(c.ok&&c.none?`<div class="alert">No costs entered yet. <a href="#" onclick="go(3);return false" style="color:var(--red)">Enter costs</a> to see totals.</div>`:c.ok?`<div class="line"><span>Actual monthly cost</span><b>${inr(c.m)}</b></div><div class="line"><span>One-time deposit</span><b>${inr(c.n.dep)}</b></div><div class="line tot"><span>Initial payment</span><b>${inr(c.n.dep+c.m)}</b></div>`:`<div class="alert">Some cost fields have errors. <a href="#" onclick="go(3);return false" style="color:var(--red)">Fix them</a>.</div>`)+`</div>`+
- `<div class="card"><b>Advertised promises</b><div class="cnt" style="margin:8px 0"><div><b style="color:var(--ok)">${pc("m")}</b>Matched</div><div><b style="color:var(--red)">${pc("x")}</b>Mismatched</div><div><b>${pc("n")}</b>Not checked</div></div>${pr.map(([t,k])=>`<div class="pr"><span>${t}</span><span class="pill ${k}">${L[k]}</span></div>`).join("")}</div>`+
- `<div class="card"><b>Warnings</b>${W.length?W.map(w=>`<div class="alert">${w}</div>`).join(""):`<div class="alert good">${n||pc("m")+pc("x")?"No mismatches or Poor ratings among the items you checked.":"Nothing checked yet, so there are no warnings."}</div>`}${pc("n")?`<div class="mut small">${pc("n")} promise${pc("n")>1?"s":""} not checked yet.</div>`:""}<div class="mut small" style="margin-top:8px">This is a simple summary of your own answers, not a certified inspection. Always verify key details with the owner before you pay.</div></div>`+
- (S.photos.length?`<div class="card"><b>Photo evidence</b><div>${S.photos.map((p,i)=>`<div class="th"><img src="${p}" alt="Evidence photo ${i+1}"></div>`).join("")}</div></div>`:"")+
- `<div class="card"><div class="row wrap"><button class="btn" id="bs" onclick="saveA()">Save Audit</button><button class="btn sec" onclick="pdf(0)">Download PDF</button><button class="btn sec" onclick="pdf(1)">Share Report</button></div><div id="st" class="small" role="status" style="margin-top:8px"></div><div class="mut small">Saved audits stay in this browser only. They don’t sync to other devices and are lost if you clear browser data. Sharing never uploads anything on its own.</div></div><div class="row wrap nav2"><button class="btn sec" onclick="go(2)">Edit audit</button><button class="btn sec" onclick="go(3)">Edit costs</button><button class="btn sec" onclick="go(4)">Edit promises</button></div><button class="btn full" onclick="fresh()">Start New Audit</button>`}
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const fd=d=>new Date(d).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
-const msg=(t,e)=>{const x=$("#st");if(x){x.textContent=t;x.style.color=e?"var(--red)":"var(--ok)"}};
-const dErr=e=>e&&e.code==="declined"?"Download cancelled.":"Couldn’t finish: "+((e&&e.message)||"unknown error")+".";
-const DB={open(){return this.p||(this.p=new Promise((ok,no)=>{const r=indexedDB.open("checkitz",1);r.onupgradeneeded=()=>r.result.createObjectStore("audits",{keyPath:"id"});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))},
- async tx(m,f){const db=await this.open();return new Promise((ok,no)=>{const t=db.transaction("audits",m),q=f(t.objectStore("audits"));t.oncomplete=()=>ok(q.result);t.onerror=t.onabort=()=>no(t.error)})},
- put(r){return this.tx("readwrite",s=>s.put(r))},get(i){return this.tx("readonly",s=>s.get(i))},all(){return this.tx("readonly",s=>s.getAll())},del(i){return this.tx("readwrite",s=>s.delete(i))}};
-function rep(){const A=Object.values(S.ans),n=A.length,cnt={g:0,a:0,p:0};A.forEach(k=>cnt[k]++);
- const sc=n?Math.round((cnt.g*10+cnt.a*5)*10/n)/10:null,pr=S.pg.pr.map((t,i)=>[t,S.prom[i]||"n"]),W=[];
- pr.forEach(([t,k])=>{if(k==="x")W.push(`Promise not kept: “${t}” didn’t match what you saw.`)});
- Object.keys(S.ans).forEach(i=>{if(S.ans[i]==="p")W.push(`Poor rating for ${CH[i][0].toLowerCase()}.`)});
- return{n,cnt,sc,pr,W,c:calc()}}
-function rec(){const R=rep();return{id:S.id,v:1,pgId:S.pg.id,pgName:S.pg.name,pgLoc:S.pg.loc,date:S.date,ans:S.ans,cost:S.cost,prom:S.prom,photos:S.photos,score:R.sc,monthly:R.c.ok&&!R.c.none?R.c.m:null,warnings:R.W,saved:Date.now()}}
-function recFrom(st){const k=S;S=st;try{return rec()}finally{S=k}}
-function stOf(r){return{pg:PGS.find(p=>p.id===r.pgId),ans:r.ans,prom:r.prom,photos:r.photos,cost:r.cost,id:r.id,date:r.date}}
-const fname=st=>"checkitz-"+st.pg.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)+"-"+String(st.date).slice(0,10);
-async function fileSave(name,blob){const d=window.claude&&await window.claude.use("downloads");if(!d)throw new Error("Downloads aren’t available in this view");await d.save({filename:name,data:blob})}
-let busy=0;
-async function saveA(){if(busy)return;if(!calc().ok){msg("Fix the cost errors before saving.",1);return}
- busy=1;const b=$("#bs");if(b)b.disabled=true;
- try{await DB.put(rec());msg("Saved in this browser. Saving again updates the same record.")}catch(e){msg("Couldn’t save: "+((e&&e.message)||"browser storage isn’t available")+".",1)}
- busy=0;if($("#bs"))$("#bs").disabled=false}
-function s6(){return head("My Saved Audits","Audits you’ve saved in this browser.")+`<div class="alert">Saved audits stay in this browser only. They aren’t synced to other devices and are lost if you clear your browser data. Export a backup to keep a copy.</div><div id="st" class="small" role="status"></div><div id="sl" class="mut">Loading…</div><div class="card"><b>Restore from backup</b><p class="mut small">Choose a Checkitz backup file (.json). It’s checked before anything is saved.</p><input type="file" accept=".json,application/json" onchange="imp(this)"></div>`}
-async function loadList(){const el=$("#sl");if(!el)return;
- try{const a=(await DB.all()).sort((x,y)=>y.saved-x.saved);
-  el.innerHTML=a.length?a.map(r=>`<div class="card"><b>${esc(r.pgName)}</b><div class="mut small">${esc(r.pgLoc)}, audited ${fd(r.date)}</div><div class="two"><div><small>Score</small><b>${r.score===null?"Not enough data":r.score.toFixed(1)+" out of 10"}</b></div><div><small>Actual monthly cost</small><b>${r.monthly===null?"Not entered":inr(r.monthly)}</b></div></div>`+(S.del===r.id?`<div class="alert">Delete this saved audit? This can’t be undone.</div><div class="row"><button class="btn" onclick="delOk('${r.id}')">Yes, delete</button><button class="btn sec" onclick="S.del=0;loadList()">Cancel</button></div>`:`<div class="row wrap"><button class="btn" onclick="openA('${r.id}')">Open</button><button class="btn sec" onclick="dlA('${r.id}')">Download PDF</button><button class="btn sec" onclick="expA('${r.id}')">Export backup</button><button class="btn sec" onclick="delA('${r.id}')">Delete</button></div>`)+`</div>`).join(""):`<div class="card">No saved audits yet. Finish an audit and tap Save Audit on the Reality Card.</div>`}
- catch(e){el.innerHTML=`<div class="alert">Couldn’t read saved audits: ${esc((e&&e.message)||"storage isn’t available")}.</div>`}}
-async function openA(id){try{const r=await DB.get(id);if(!r)throw new Error("record not found");S=stOf(r);go(5)}catch(e){msg("Couldn’t open: "+e.message,1)}}
-function delA(id){S.del=id;loadList()}
-async function delOk(id){try{await DB.del(id);S.del=0;msg("Deleted.")}catch(e){msg("Couldn’t delete: "+((e&&e.message)||"unknown error")+".",1)}loadList()}
-async function dlA(id){try{const r=await DB.get(id);if(!r)throw new Error("record not found");await pdf(0,stOf(r))}catch(e){msg("Couldn’t open that record: "+e.message,1)}}
-async function expA(id){try{const r=await DB.get(id);if(!r)throw new Error("record not found");await fileSave(fname(stOf(r))+".json",new Blob([JSON.stringify({app:"checkitz",version:1,exported:new Date().toISOString(),audit:r})],{type:"application/json"}));msg("Backup file ready.")}catch(e){msg(dErr(e),1)}}
-function vld(o){const a=o&&o.audit,bad=m=>{throw new Error(m)};
- if(!o||o.app!=="checkitz"||!a||typeof a!=="object")bad("this isn’t a Checkitz backup file");
- const pg=PGS.find(p=>p.id===a.pgId);if(!pg)bad("the backup names a PG that isn’t in this directory");
- if(typeof a.id!=="string"||!/^[\w-]{1,40}$/.test(a.id))bad("the record ID is invalid");
- if(typeof a.date!=="string"||isNaN(Date.parse(a.date)))bad("the audit date is invalid");
- const ans={},prom={},cost={};
- for(const[k,v]of Object.entries(a.ans||{})){if(!/^[0-9]$/.test(k)||typeof v!=="string"||v.length!==1||!"gap".includes(v))bad("an inspection answer is invalid");ans[k]=v}
- for(const[k,v]of Object.entries(a.prom||{})){if(!/^[0-3]$/.test(k)||!["m","x","n"].includes(v))bad("a promise status is invalid");prom[k]=v}
- for(const[k]of CF){const v=a.cost&&a.cost[k];if(v===undefined||v===null||v==="")cost[k]="";else{const x=Number(v);if(typeof v==="boolean"||!isFinite(x)||x<0)bad("a cost value is invalid");cost[k]=String(v)}}
- const ph=a.photos===undefined?[]:a.photos;
- if(!Array.isArray(ph)||ph.length>3||ph.some(p=>typeof p!=="string"||!/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(p)))bad("the photos are invalid or there are more than 3");
- return{pg,ans,prom,cost,photos:ph,id:a.id,date:a.date}}
-async function imp(el){const f=el.files[0];el.value="";if(!f)return;
- try{if(f.size>30e6)throw new Error("the file is too large to be a Checkitz backup");
-  const txt=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(new Error("the file couldn’t be read"));r.readAsText(f)});
-  let o;try{o=JSON.parse(txt)}catch{throw new Error("the file isn’t valid JSON")}
-  const st=vld(o);await DB.put(recFrom(st));msg(`Restored “${st.pg.name}” from ${fd(st.date)}.`);loadList()}
- catch(e){msg("Couldn’t restore: "+e.message+".",1)}}
-const dim=u=>new Promise(r=>{const i=new Image();i.onload=()=>r([i.width||4,i.height||3]);i.onerror=()=>r([4,3]);i.src=u});
-async function mkPdf(st){
- const J=window.jspdf;if(!J)throw new Error("the PDF library didn’t load. Check your connection and reload the page");
- const k=S;let R;S=st;try{R=rep()}finally{S=k}
- const c=R.c,d=new J.jsPDF({unit:"mm",format:"a4"}),P=t=>String(t).replace(/[“”]/g,'"').replace(/[’‘]/g,"'").replace(/[–—]/g,"-"),Rs=n=>"Rs "+Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
- const NV=[20,33,61],RD=[230,57,70],GN=[31,138,76],AM=[194,124,14],GY=[110,118,135];let y=0;
- const room=h=>{if(y+h>278){d.addPage();y=18}};
- const T=(t,x,sz,w,col,al)=>{d.setFont("helvetica",w||"normal");d.setFontSize(sz||10);d.setTextColor(...(col||NV));d.text(P(t),x,y,al?{align:"right"}:undefined)};
- const H=t=>{room(16);y+=8;T(t,16,12,"bold");y+=2.5;d.setDrawColor(223,227,234);d.line(16,y,194,y);y+=6};
- const L=(a,b,col,bold)=>{room(7);T(a,16,10,bold?"bold":"normal");T(b,194,10,"bold",col,1);y+=6.5};
- const Wp=(t,col,sz)=>{d.setFont("helvetica","normal");d.setFontSize(sz||10);d.setTextColor(...(col||NV));d.splitTextToSize(P(t),178).forEach(l=>{room(6);d.text(l,16,y);y+=5})};
- d.setFillColor(...NV);d.rect(0,0,210,26,"F");y=16;T("Checkitz",16,22,"bold",[255,255,255]);T("Reality Card",194,11,"normal",[255,255,255],1);
- y=38;T(st.pg.name,16,16,"bold");y+=6.5;T(st.pg.loc,16,11,"normal",GY);y+=6;T("Audit date: "+fd(st.date),16,10,"normal",GY);y+=2;
- H("Checkitz score");
- const sc=R.sc;T(sc===null?"Not enough data to calculate a score":sc.toFixed(1)+" out of 10",16,sc===null?12:20,"bold",sc===null?AM:sc>=7.5?GN:sc>=5?AM:RD);y+=7;
- Wp("A simple Checkitz score based on the user's own answers. It is not a verified certification or inspection.",GY,9);
- Wp(`Good: ${R.cnt.g}    Average: ${R.cnt.a}    Poor: ${R.cnt.p}    Unanswered: ${10-R.n}`);
- H("Inspection ratings");
- const RT={g:["Good",GN],a:["Average",AM],p:["Poor",RD]};
- CH.forEach((x,i)=>{const r=RT[st.ans[i]]||["Not answered",GY];L(`${i+1}. ${x[0]}`,r[0],r[1])});
- H("Costs");
- if(c.none||!c.ok)Wp("Costs were not entered.",GY);
- else{[["Rent",c.n.rent],["Food",c.n.food],["Electricity",c.n.elec],["Other monthly charges",c.n.other]].forEach(([a,v])=>L(a,Rs(v),NV));
-  L("Actual monthly cost (excludes deposit)",Rs(c.m),NV,1);L("One-time deposit (paid upfront)",Rs(c.n.dep),NV);L("Initial payment (deposit + first month)",Rs(c.n.dep+c.m),RD,1)}
- H("Advertised promises vs reality");
- const PS={m:["Match",GN],x:["Mismatch",RD],n:["Not checked",GY]};R.pr.forEach(([t,v])=>L(t,PS[v][0],PS[v][1]));
- H("Warnings");
- if(R.W.length)R.W.forEach(w=>Wp("- "+w,RD));else Wp(R.n||R.pr.some(x=>x[1]!=="n")?"No mismatches or Poor ratings among the items checked.":"Nothing checked yet, so there are no warnings.");
- if(st.photos.length){H("Photo evidence");room(62);for(let i=0;i<st.photos.length;i++){const[w,h]=await dim(st.photos[i]),q=Math.min(56/w,56/h);d.addImage(st.photos[i],"JPEG",16+i*61,y,w*q,h*q)}y+=60}
- const N=d.getNumberOfPages();for(let i=1;i<=N;i++){d.setPage(i);d.setFontSize(8);d.setFont("helvetica","normal");d.setTextColor(...GY);d.text("Checkitz is a simple score from your own answers, not a verified certification or inspection. Made on your device.",16,290);d.text(`Page ${i} of ${N}`,194,290,{align:"right"})}
- return d.output("blob")}
-async function pdf(share,st){st=st||S;if(!st.pg)return;
- if(st===S&&!calc().ok){msg("Fix the cost errors before making a PDF.",1);return}
- msg("Preparing the PDF…");
- try{const b=await mkPdf(st),name=fname(st)+".pdf";let fb="";
-  if(share){try{const f=new File([b],name,{type:"application/pdf"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Checkitz report"});msg("Report shared.");return}}catch(e){if(e&&e.name==="AbortError"){msg("Sharing cancelled.");return}}fb=" Sharing files isn’t supported here, so it was offered as a download instead."}
-  await fileSave(name,b);msg("PDF saved: "+name+"."+fb)}
- catch(e){msg("Couldn’t create or save the PDF: "+dErr(e).replace("Couldn’t finish: ","")+"",1)}}
-fresh();
-</script></body></html>
+
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-card: #f1f5f9;
+  --surface-elevated: #e2e8f0;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.16);
+  --gold: #b27a3c;
+  --gold-glow: rgba(178, 122, 60, 0.15);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --glass: rgba(255, 255, 255, 0.85);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+  padding-bottom: 90px;
+  overflow-x: hidden;
+}
+
+/* Typography */
+h1, h2, h3, .serif {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.italic { font-style: italic; }
+
+/* Sticky Header */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+}
+.header-inner {
+  max-width: 680px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--gold), #8a5a2a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 4px 12px var(--gold-glow);
+}
+.brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+.brand-name span { color: var(--gold); }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.icon-btn:hover {
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+/* Main Container */
+main {
+  max-width: 680px;
+  margin: auto;
+  padding: 20px 16px;
+}
+
+/* Hero Section */
+.hero {
+  padding: 24px 0 16px;
+  text-align: left;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 4px 12px;
+  border-radius: 99px;
+  background: var(--gold-glow);
+  border: 1px solid rgba(212, 163, 115, 0.3);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.hero-title {
+  font-size: 32px;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+.hero-sub {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Cards & Editorial Modules */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.card-hover:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+/* PG Listing Card */
+.pg-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  cursor: pointer;
+}
+.pg-img-wrap {
+  position: relative;
+  height: 180px;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface-card);
+}
+.pg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.pg-item:hover .pg-img {
+  transform: scale(1.04);
+}
+.pg-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 15, 23, 0.1) 0%, rgba(11, 15, 23, 0.85) 100%);
+}
+.pg-badge-floating {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(11, 15, 23, 0.85);
+  backdrop-filter: blur(8px);
+  color: var(--gold);
+  border: 1px solid rgba(212, 163, 115, 0.4);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+.pg-info-floating {
+  position: absolute;
+  bottom: 14px;
+  left: 16px;
+  right: 16px;
+}
+.pg-info-floating h3 {
+  font-size: 21px;
+  color: #fff;
+  margin-bottom: 2px;
+}
+.pg-info-floating .loc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.pg-body {
+  padding: 16px 18px 20px;
+}
+.pg-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+.pg-meta-box {
+  background: var(--surface-card);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.pg-meta-box small {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pg-meta-box b {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+/* Custom PG Action Button */
+.btn-custom-pg {
+  background: linear-gradient(135deg, rgba(212, 163, 115, 0.15), rgba(212, 163, 115, 0.05));
+  border: 1px dashed var(--gold);
+  color: var(--gold);
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+.btn-custom-pg:hover {
+  background: var(--gold-glow);
+  transform: translateY(-1px);
+}
+
+/* Buttons */
+.btn {
+  background: linear-gradient(135deg, var(--gold), #9b6c38);
+  color: #fff;
+  border: none;
+  padding: 14px 22px;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px var(--gold-glow);
+  transition: all 0.2s;
+  width: 100%;
+}
+.btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+.btn:active { transform: translateY(0); }
+.btn.sec {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  box-shadow: none;
+}
+.btn.sec:hover {
+  background: var(--surface-card);
+}
+.btn.whatsapp {
+  background: #25d366;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+}
+.btn.whatsapp:hover { filter: brightness(1.08); }
+
+/* Sticky Bottom Navigation Bar */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+}
+.tab-bar-inner {
+  max-width: 680px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  gap: 4px;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  flex: 1;
+  transition: color 0.2s;
+}
+.tab-btn span.num {
+  font-size: 10px;
+  background: var(--surface-card);
+  padding: 2px 6px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+}
+.tab-btn.active {
+  color: var(--gold);
+}
+.tab-btn.active span.num {
+  background: var(--gold);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* Audit Top Bar */
+.pg-active-bar {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pg-active-bar b { font-family: 'Playfair Display', serif; font-size: 17px; }
+
+/* Segmented Buttons */
+.seg {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.seg button {
+  flex: 1;
+  padding: 11px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.seg button:hover { border-color: var(--border-strong); }
+.seg button.on.g { background: var(--ok); color: #fff; border-color: transparent; }
+.seg button.on.a { background: var(--warn); color: #fff; border-color: transparent; }
+.seg button.on.p { background: var(--red); color: #fff; border-color: transparent; }
+.seg button.on.n { background: var(--text-muted); color: #fff; border-color: transparent; }
+
+/* Input Fields */
+.form-group {
+  margin-bottom: 14px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+.inp-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  transition: border-color 0.2s;
+}
+.inp-wrap:focus-within {
+  border-color: var(--gold);
+}
+.inp-wrap span.pre {
+  color: var(--text-muted);
+  font-size: 15px;
+  margin-right: 6px;
+}
+.inp-wrap input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 0;
+  width: 100%;
+}
+
+/* Sharing Pills */
+.share-selector {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+.share-pill {
+  flex: 1;
+  padding: 10px 4px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.share-pill.active {
+  background: var(--gold-glow);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+/* Alerts & Red Flag Banners */
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  margin: 12px 0;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border-left: 4px solid var(--red);
+  background: var(--red-bg);
+  color: var(--text-primary);
+}
+.alert.warn {
+  border-left-color: var(--warn);
+  background: var(--warn-bg);
+}
+.alert.good {
+  border-left-color: var(--ok);
+  background: var(--ok-bg);
+}
+.alert.info {
+  border-left-color: var(--gold);
+  background: var(--gold-glow);
+}
+
+/* Photo Gallery Preview */
+.photo-uploader {
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface-card);
+}
+.photo-uploader:hover {
+  border-color: var(--gold);
+  background: var(--gold-glow);
+}
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+.photo-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+.photo-thumb button.del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+}
+
+/* Score Ring */
+.score-hero {
+  text-align: center;
+  padding: 24px 16px;
+}
+.ring-box {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--ring-color) calc(var(--ring-pct) * 1%), var(--border) 0);
+  box-shadow: 0 0 30px var(--ring-glow);
+}
+.ring-inner {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+.ring-inner b {
+  font-size: 38px;
+  font-family: 'Playfair Display', serif;
+  line-height: 1;
+  color: var(--text-primary);
+}
+.ring-inner span {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* Horizontal Bar Chart for Score Breakdown */
+.chart-bar-wrap {
+  margin: 16px 0;
+}
+.chart-bar {
+  height: 14px;
+  border-radius: 99px;
+  background: var(--surface-elevated);
+  display: flex;
+  overflow: hidden;
+}
+.chart-seg {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+.chart-seg.g { background: var(--ok); }
+.chart-seg.a { background: var(--warn); }
+.chart-seg.p { background: var(--red); }
+.chart-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+}
+.chart-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: none;
+  place-items: center;
+  padding: 16px;
+}
+.modal-overlay.open { display: grid; }
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+}
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Comparison Table */
+.cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 14px 0;
+}
+.cmp-table th, .cmp-table td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.cmp-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.cmp-table tr:hover { background: var(--surface-card); }
+
+/* Quick Mode Toggle Badge */
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.row-actions > * { flex: 1; }
+
+/* Toast */
+#toast {
+  position: fixed;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111827;
+  color: #fff;
+  border: 1px solid var(--gold);
+  padding: 10px 20px;
+  border-radius: 99px;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  z-index: 120;
+  display: none;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="#" class="brand" onclick="goScreen(1); return false;">
+      <div class="brand-mark">C</div>
+      <div class="brand-name">Check<span>itz</span></div>
+    </a>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">🌓</button>
+      <button class="icon-btn" onclick="openCustomModal()" title="Audit Any Custom PG">➕</button>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<!-- Sticky Bottom Navigation -->
+<nav class="tab-bar">
+  <div class="tab-bar-inner" id="tabBar"></div>
+</nav>
+
+<!-- Toast Notice -->
+<div id="toast"></div>
+
+<!-- Custom PG Modal -->
+<div class="modal-overlay" id="customModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 class="serif">Audit Any Custom PG</h3>
+      <button class="modal-close" onclick="closeCustomModal()">✕</button>
+    </div>
+    <p class="hero-sub" style="margin-bottom:16px;">Visiting a place not in the VIT-AP list? Audit any hostel or apartment anywhere.</p>
+    
+    <div class="form-group">
+      <label>PG / Hostel Name</label>
+      <div class="inp-wrap"><input type="text" id="custName" placeholder="e.g. Sri Sai Luxury PG"></div>
+    </div>
+    <div class="form-group">
+      <label>Area / Locality</label>
+      <div class="inp-wrap"><input type="text" id="custLoc" placeholder="e.g. Mandadam / Vijayawada"></div>
+    </div>
+    <div class="form-group">
+      <label>Advertised Starting Rent (optional)</label>
+      <div class="inp-wrap"><span class="pre">₹</span><input type="number" id="custRent" placeholder="e.g. 8500"></div>
+    </div>
+    <button class="btn" style="margin-top:10px;" onclick="createCustomPG()">Start Custom Audit</button>
+  </div>
+</div>
+
+<!-- Image Lightbox Modal -->
+<div class="modal-overlay" id="imgModal" onclick="closeImgModal()">
+  <div style="max-width:90vw;max-height:90vh;position:relative;">
+    <img id="lightboxImg" src="" style="max-width:100%;max-height:85vh;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.9);display:block;margin:auto;">
+  </div>
+</div>
+
+<script>
+// --- DATABASE & STATE ---
+const DB_NAME = "checkitz_luxury_v1";
+let db;
+
+function initDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains("audits")) {
+        d.createObjectStore("audits", { keyPath: "id" });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror = e => rej(e);
+  });
+}
+
+function saveAuditDB(audit) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction("audits", "readwrite");
+    tx.objectStore("audits").put(audit);
+    tx.oncomplete = () => res();
+    tx.onerror = e => rej(e);
+  });
+}
+
+function getAllAuditsDB() {
+  return new Promise((res, rej) => {
+    const tx = db.transaction("audits", "readonly");
+    const req = tx.objectStore("audits").getAll();
+    req.onsuccess = () => res(req.result || []);
+    req.onerror = e => rej(e);
+  });
+}
+
+function deleteAuditDB(id) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction("audits", "readwrite");
+    tx.objectStore("audits").delete(id);
+    tx.oncomplete = () => res();
+    tx.onerror = e => rej(e);
+  });
+}
+
+// Pre-loaded VIT-AP Directory with Editorial Images
+const SEED_PGS = [
+  {
+    id: "sv-luxury",
+    name: "S V Luxury Hostel & PG",
+    loc: "Mandadam / Velagapudi (1.8 km from VIT-AP)",
+    rent: "₹8,500 – ₹12,000",
+    cover: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80",
+    promises: ["24/7 Power Backup", "High-speed Wi-Fi", "3 Times North/South Food", "Attached Western Bathroom", "Purified RO Water"]
+  },
+  {
+    id: "sv-boys",
+    name: "SV Boys Hostel",
+    loc: "Inavolu (2.1 km from VIT-AP)",
+    rent: "₹7,500 – ₹9,500",
+    cover: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
+    promises: ["Continuous Water Supply", "Free Wi-Fi", "Daily Cleaning", "Study Table Provided"]
+  },
+  {
+    id: "elite-homestay",
+    name: "Elite Homestay — Nirvana",
+    loc: "Mandadam / Malkapuram Road",
+    rent: "₹9,000 – ₹14,000",
+    cover: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80",
+    promises: ["AC in all rooms", "Power Backup for AC & Wi-Fi", "Nutritious Food", "CCTV & Biometric Security"]
+  },
+  {
+    id: "surya-boys",
+    name: "Surya Boys Hostel",
+    loc: "Inavolu Village Road",
+    rent: "₹7,000 – ₹8,500",
+    cover: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80",
+    promises: ["24/7 Drinking Water", "Hot Water in Winter", "Wi-Fi included", "Bi-weekly Room Cleaning"]
+  },
+  {
+    id: "sree-nivasam",
+    name: "Sree Nivasam Hostel",
+    loc: "Velagapudi Main Road",
+    rent: "₹8,000 – ₹10,500",
+    cover: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80",
+    promises: ["South Indian Home Style Food", "Uninterrupted Water", "Spacious 2/3 Sharing", "CCTV Cameras"]
+  },
+  {
+    id: "veda-boys",
+    name: "Veda Boys Hostel",
+    loc: "Inavolu Road near Bus Stop",
+    rent: "₹7,800 – ₹9,200",
+    cover: "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80",
+    promises: ["24/7 Water", "Wi-Fi Router per Floor", "Washing Machine Access", "Night Warden"]
+  },
+  {
+    id: "rrr-hostel",
+    name: "RRR PG Hostel",
+    loc: "Kuragallu / Malkapuram Road",
+    rent: "₹8,500 – ₹11,000",
+    cover: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80",
+    promises: ["AC & Non-AC Rooms", "Free Electricity up to 50 units", "High Speed Wi-Fi", "3 Times Meal + Evening Tea"]
+  }
+];
+
+// Audit Checks (10 Items)
+const AUDIT_CHECKS = [
+  { id: "clean", name: "Room Cleanliness", desc: "No dust buildup, clean mattress, mold-free walls", vital: true },
+  { id: "vent", name: "Ventilation & Natural Light", desc: "Openable window, natural airflow, no suffocating damp smell", vital: true },
+  { id: "water", name: "Water Pressure & 24/7 Flow", desc: "Turn taps on; check morning & evening consistency and geyser", vital: true },
+  { id: "elec", name: "Electricity & Sub-meter", desc: "Check if separate sub-meter exists; verify rate per unit", vital: true },
+  { id: "food", name: "Food Quality & Kitchen Hygiene", desc: "Inspect mess kitchen, water filter cleanliness, hygiene", vital: true },
+  { id: "wifi", name: "Wi-Fi Signal Strength", desc: "Run a quick speed test on your phone inside the actual room", vital: false },
+  { id: "bath", name: "Bathroom & Plumbing Condition", desc: "Flush toilet, check drainage slope, check for leaks/stains", vital: false },
+  { id: "room", name: "Furniture Condition", desc: "Sturdy bed frame, working cupboard locks, desk ergonomics", vital: false },
+  { id: "noise", name: "Noise & Acoustic Privacy", desc: "Proximity to highway, barking dogs, loud corridors", vital: false },
+  { id: "sec", name: "Security & Gate Rules", desc: "CCTV coverage, warden presence, reasonable curfew hours", vital: false }
+];
+
+// App State
+let S = {
+  screen: 1, // 1: PGs, 2: Audit, 3: Costs, 4: Promises & Photos, 5: Reality Card, 6: Saved & Compare
+  quickMode: false,
+  pg: null,
+  ans: {}, // check index -> 'g'|'a'|'p'
+  sharing: 1, // 1, 2, 3, 4
+  cost: { rent: "", dep: "", food: "", elec: "", other: "", unitRate: "10" },
+  prom: {}, // promise index -> 'm'|'x'|'n'
+  photos: [], // base64 strings (max 3)
+  traps: {
+    commercialElec: false,
+    depositDeduction: false,
+    strictCurfew: false
+  },
+  id: null,
+  date: null
+};
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  setTimeout(() => { t.style.display = "none"; }, 3200);
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("checkitz_theme", next); } catch(e){}
+}
+
+function initTheme() {
+  try {
+    const saved = localStorage.getItem("checkitz_theme");
+    if (saved) document.documentElement.setAttribute("data-theme", saved);
+  } catch(e){}
+}
+
+// Navigation & Screen Management
+function goScreen(n) {
+  if (n > 1 && n < 6 && !S.pg) {
+    toast("Please select a PG first!");
+    n = 1;
+  }
+  S.screen = n;
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function selectPG(pg) {
+  S.pg = pg;
+  S.ans = {};
+  S.prom = {};
+  S.photos = [];
+  S.cost = { rent: "", dep: "", food: "", elec: "", other: "", unitRate: "10" };
+  S.traps = { commercialElec: false, depositDeduction: false, strictCurfew: false };
+  S.sharing = 1;
+  S.id = "audit_" + Date.now().toString(36);
+  S.date = new Date().toISOString();
+  goScreen(2);
+}
+
+// Custom PG Modal
+function openCustomModal() { document.getElementById("customModal").classList.add("open"); }
+function closeCustomModal() { document.getElementById("customModal").classList.remove("open"); }
+
+function createCustomPG() {
+  const name = document.getElementById("custName").value.trim();
+  const loc = document.getElementById("custLoc").value.trim();
+  const rentVal = document.getElementById("custRent").value.trim();
+  
+  if (!name) { alert("Please enter the PG / Hostel name."); return; }
+  
+  const customPG = {
+    id: "cust_" + Date.now(),
+    name: name,
+    loc: loc || "Custom Location",
+    rent: rentVal ? `₹${rentVal} / month` : "Self-audited",
+    cover: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
+    promises: ["24/7 Water", "Electricity / Power", "Wi-Fi Access", "Furnished Room", "Food Arrangements"]
+  };
+  
+  closeCustomModal();
+  selectPG(customPG);
+  if (rentVal) S.cost.rent = rentVal;
+}
+
+// Image Modal / Lightbox
+function openImgModal(src) {
+  document.getElementById("lightboxImg").src = src;
+  document.getElementById("imgModal").classList.add("open");
+}
+function closeImgModal() {
+  document.getElementById("imgModal").classList.remove("open");
+}
+
+// Calculations
+function calculateMetrics() {
+  const activeChecks = S.quickMode ? AUDIT_CHECKS.filter(c => c.vital) : AUDIT_CHECKS;
+  const answered = [];
+  let scorePoints = 0;
+  let maxPoints = 0;
+  let counts = { g: 0, a: 0, p: 0 };
+  
+  activeChecks.forEach((c, idx) => {
+    const val = S.ans[idx];
+    if (val) {
+      answered.push(c);
+      counts[val]++;
+      if (val === 'g') scorePoints += 10;
+      else if (val === 'a') scorePoints += 5;
+      maxPoints += 10;
+    }
+  });
+  
+  const score = maxPoints > 0 ? (scorePoints / maxPoints) * 10 : null;
+  
+  // Cost computation
+  const rent = parseFloat(S.cost.rent) || 0;
+  const food = parseFloat(S.cost.food) || 0;
+  const elec = parseFloat(S.cost.elec) || 0;
+  const other = parseFloat(S.cost.other) || 0;
+  const dep = parseFloat(S.cost.dep) || 0;
+  
+  const totalMonthly = rent + food + elec + other;
+  const shareFactor = S.sharing || 1;
+  const myMonthly = totalMonthly / shareFactor;
+  const myDeposit = dep / shareFactor;
+  const myUpfront = myDeposit + myMonthly;
+  
+  return {
+    score,
+    scorePoints,
+    maxPoints,
+    answeredCount: answered.length,
+    totalChecks: activeChecks.length,
+    counts,
+    totalMonthly,
+    myMonthly,
+    dep,
+    myDeposit,
+    myUpfront,
+    shareFactor
+  };
+}
+
+// Screen 1: PG Selection & Directory
+function renderScreen1() {
+  return `
+    <div class="hero">
+      <div class="hero-tag">✨ Hospitality Intelligence</div>
+      <h1 class="hero-title serif">Select a <span class="italic">PG to Audit</span></h1>
+      <p class="hero-sub">Before you pay an advance token, verify hidden electricity tariffs, water pressure, and real costs.</p>
+    </div>
+
+    <button class="btn-custom-pg" onclick="openCustomModal()">
+      <span>➕</span> Audit Any Custom PG or Hostel
+    </button>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin: 16px 0 12px;">
+      <h3 class="serif" style="font-size:18px;">Near VIT-AP University</h3>
+      <small style="color:var(--text-muted);">${SEED_PGS.length} listings</small>
+    </div>
+
+    ${SEED_PGS.map(pg => `
+      <div class="card pg-item card-hover" onclick='selectPG(${JSON.stringify(pg).replace(/'/g, "&apos;")})'>
+        <div class="pg-img-wrap">
+          <img src="${pg.cover}" class="pg-img" alt="${pg.name}">
+          <div class="pg-scrim"></div>
+          <div class="pg-badge-floating">${pg.rent}</div>
+          <div class="pg-info-floating">
+            <h3>${pg.name}</h3>
+            <div class="loc">📍 ${pg.loc}</div>
+          </div>
+        </div>
+        <div class="pg-body">
+          <div class="pg-meta-grid">
+            <div class="pg-meta-box">
+              <small>Promised Amenities</small>
+              <b>${pg.promises.length} Features Listed</b>
+            </div>
+            <div class="pg-meta-box">
+              <small>Inspection Status</small>
+              <b style="color:var(--gold);">Ready to Audit</b>
+            </div>
+          </div>
+          <button class="btn" onclick='event.stopPropagation(); selectPG(${JSON.stringify(pg).replace(/'/g, "&apos;")})'>
+            Start Inspection Audit →
+          </button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// Screen 2: 10-Check Inspection Form
+function renderScreen2() {
+  const activeChecks = S.quickMode ? AUDIT_CHECKS.filter(c => c.vital) : AUDIT_CHECKS;
+  const answeredCount = Object.keys(S.ans).length;
+  
+  return `
+    <div class="pg-active-bar">
+      <div>
+        <small style="color:var(--text-muted);text-transform:uppercase;font-size:10px;">Auditing</small>
+        <b>${S.pg.name}</b>
+      </div>
+      <button class="btn sec" style="width:auto;padding:6px 12px;min-height:unset;font-size:12px;" onclick="fillSampleAudit()">Sample Data</button>
+    </div>
+
+    <div class="mode-toggle">
+      <div>
+        <b style="font-size:14px;">Quick 5-Point Walkthrough</b>
+        <div style="font-size:12px;color:var(--text-muted);">Audit only dealbreaker checks during rapid visits</div>
+      </div>
+      <input type="checkbox" id="modeSwitch" ${S.quickMode ? "checked" : ""} onchange="toggleQuickMode(this.checked)" style="transform:scale(1.3);cursor:pointer;">
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <h2 class="serif" style="font-size:24px;">Condition & <span class="italic">Quality Audit</span></h2>
+      <p class="hero-sub">Rate each facility honestly based on your live room inspection.</p>
+    </div>
+
+    ${activeChecks.map((c, idx) => `
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <b style="font-size:16px;">${idx + 1}. ${c.name}</b>
+            ${c.vital ? '<span style="font-size:10px;background:var(--gold-glow);color:var(--gold);padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;">VITAL</span>' : ''}
+            <div style="font-size:13px;color:var(--text-secondary);margin-top:2px;">${c.desc}</div>
+          </div>
+        </div>
+        <div class="seg">
+          <button class="${S.ans[idx] === 'g' ? 'on g' : ''}" onclick="setRating(${idx}, 'g')">Good (+10)</button>
+          <button class="${S.ans[idx] === 'a' ? 'on a' : ''}" onclick="setRating(${idx}, 'a')">Average (+5)</button>
+          <button class="${S.ans[idx] === 'p' ? 'on p' : ''}" onclick="setRating(${idx}, 'p')">Poor (0)</button>
+        </div>
+      </div>
+    `).join("")}
+
+    <div style="text-align:center;color:var(--text-muted);font-size:13px;margin:16px 0;">
+      ${answeredCount} of ${activeChecks.length} checks answered
+    </div>
+
+    <div class="row-actions">
+      <button class="btn sec" onclick="goScreen(1)">Back</button>
+      <button class="btn" onclick="goScreen(3)">Next: Cost Calculator →</button>
+    </div>
+  `;
+}
+
+function setRating(idx, val) {
+  if (S.ans[idx] === val) delete S.ans[idx];
+  else S.ans[idx] = val;
+  render();
+}
+
+function toggleQuickMode(checked) {
+  S.quickMode = checked;
+  S.ans = {};
+  render();
+}
+
+function fillSampleAudit() {
+  S.ans = { 0: "g", 1: "a", 2: "p", 3: "a", 4: "g", 5: "a", 6: "g", 7: "a", 8: "p", 9: "g" };
+  S.cost = { rent: "9500", dep: "15000", food: "3000", elec: "1200", other: "500", unitRate: "12" };
+  S.traps = { commercialElec: true, depositDeduction: true, strictCurfew: false };
+  S.sharing = 2;
+  S.prom = { 0: "m", 1: "x", 2: "m", 3: "m", 4: "x" };
+  toast("Filled with realistic sample audit data!");
+  render();
+}
+
+// Screen 3: Cost Calculator & Sharing Splitter
+function renderScreen3() {
+  const m = calculateMetrics();
+  
+  return `
+    <div class="pg-active-bar">
+      <div>
+        <small style="color:var(--text-muted);text-transform:uppercase;font-size:10px;">Auditing</small>
+        <b>${S.pg.name}</b>
+      </div>
+    </div>
+
+    <h2 class="serif" style="font-size:24px;">The True <span class="italic">Cost Calculator</span></h2>
+    <p class="hero-sub" style="margin-bottom:16px;">Landlords quote base rent, but food, power units, and deposit traps alter the real bill.</p>
+
+    <!-- Sharing Selector -->
+    <div class="card">
+      <b style="font-size:14px;color:var(--text-secondary);">Room Occupancy / Sharing</b>
+      <div class="share-selector">
+        <div class="share-pill ${S.sharing == 1 ? 'active' : ''}" onclick="setSharing(1)">1-Share (Private)</div>
+        <div class="share-pill ${S.sharing == 2 ? 'active' : ''}" onclick="setSharing(2)">2-Sharing</div>
+        <div class="share-pill ${S.sharing == 3 ? 'active' : ''}" onclick="setSharing(3)">3-Sharing</div>
+        <div class="share-pill ${S.sharing == 4 ? 'active' : ''}" onclick="setSharing(4)">4-Sharing</div>
+      </div>
+
+      <div class="form-group">
+        <label>Total Room Monthly Rent (quoted)</label>
+        <div class="inp-wrap"><span class="pre">₹</span><input type="number" id="inpRent" value="${S.cost.rent}" oninput="updateCost('rent', this.value)" placeholder="9000"></div>
+      </div>
+      <div class="form-group">
+        <label>One-time Security Deposit</label>
+        <div class="inp-wrap"><span class="pre">₹</span><input type="number" id="inpDep" value="${S.cost.dep}" oninput="updateCost('dep', this.value)" placeholder="15000"></div>
+      </div>
+      <div class="form-group">
+        <label>Monthly Mess / Food Charges (if extra)</label>
+        <div class="inp-wrap"><span class="pre">₹</span><input type="number" id="inpFood" value="${S.cost.food}" oninput="updateCost('food', this.value)" placeholder="0 if included"></div>
+      </div>
+      <div class="form-group">
+        <label>Estimated Monthly Electricity Cost</label>
+        <div class="inp-wrap"><span class="pre">₹</span><input type="number" id="inpElec" value="${S.cost.elec}" oninput="updateCost('elec', this.value)" placeholder="1200"></div>
+      </div>
+      <div class="form-group">
+        <label>Maintenance / Laundry / Other Charges</label>
+        <div class="inp-wrap"><span class="pre">₹</span><input type="number" id="inpOther" value="${S.cost.other}" oninput="updateCost('other', this.value)" placeholder="500"></div>
+      </div>
+    </div>
+
+    <!-- Red-Flag Trap Checkers -->
+    <div class="card">
+      <b class="serif" style="font-size:17px;color:var(--gold);">⚠️ Hidden Fine-Print Checkers</b>
+      <p style="font-size:12px;color:var(--text-muted);margin:4px 0 12px;">Did the owner mention any of these common deductions?</p>
+      
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;margin-bottom:10px;">
+        <input type="checkbox" ${S.traps.commercialElec ? "checked" : ""} onchange="setTrap('commercialElec', this.checked)">
+        <span>High electricity rate (<b>₹10 to ₹14 per unit</b> or commercial meter)</span>
+      </label>
+
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;margin-bottom:10px;">
+        <input type="checkbox" ${S.traps.depositDeduction ? "checked" : ""} onchange="setTrap('depositDeduction', this.checked)">
+        <span>Mandatory non-refundable deduction from deposit (e.g. ₹2000 painting fee)</span>
+      </label>
+
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+        <input type="checkbox" ${S.traps.strictCurfew ? "checked" : ""} onchange="setTrap('strictCurfew', this.checked)">
+        <span>Strict early curfew (gate locked before 8:30 PM with fines)</span>
+      </label>
+    </div>
+
+    <!-- Live Calculation Result -->
+    <div class="card" style="background:linear-gradient(135deg, var(--surface), var(--surface-card));border-color:rgba(212,163,115,0.3);">
+      <div style="font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">
+        ${S.sharing > 1 ? `Your Per-Person Share (${S.sharing}-Sharing)` : "Your Monthly Commitment"}
+      </div>
+      <div style="font-size:36px;font-family:'Playfair Display',serif;font-weight:700;color:#fff;margin:4px 0;">
+        ₹${Math.round(m.myMonthly).toLocaleString('en-IN')} <span style="font-size:15px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;color:var(--text-muted);">/ month</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px;">
+        Total Room Cost: ₹${Math.round(m.totalMonthly).toLocaleString('en-IN')}/mo
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+        <span style="color:var(--text-muted);">Your Upfront Deposit:</span>
+        <b>₹${Math.round(m.myDeposit).toLocaleString('en-IN')}</b>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--gold);">
+        <span>Total First Month Outflow:</span>
+        <span>₹${Math.round(m.myUpfront).toLocaleString('en-IN')}</span>
+      </div>
+    </div>
+
+    <div class="row-actions">
+      <button class="btn sec" onclick="goScreen(2)">Back</button>
+      <button class="btn" onclick="goScreen(4)">Next: Promises & Photos →</button>
+    </div>
+  `;
+}
+
+function updateCost(key, val) { S.cost[key] = val; }
+function setSharing(n) { S.sharing = n; render(); }
+function setTrap(key, val) { S.traps[key] = val; render(); }
+
+// Screen 4: Promises vs Reality & Photo Upload
+function renderScreen4() {
+  const promises = S.pg.promises || [];
+  
+  return `
+    <div class="pg-active-bar">
+      <div>
+        <small style="color:var(--text-muted);text-transform:uppercase;font-size:10px;">Auditing</small>
+        <b>${S.pg.name}</b>
+      </div>
+    </div>
+
+    <h2 class="serif" style="font-size:24px;">Advertised vs <span class="italic">Reality</span></h2>
+    <p class="hero-sub" style="margin-bottom:16px;">Hold the landlord accountable to what was promised on WhatsApp or brochures.</p>
+
+    ${promises.map((p, idx) => `
+      <div class="card">
+        <b style="font-size:15px;">${p}</b>
+        <div class="seg">
+          <button class="${S.prom[idx] === 'm' ? 'on g' : ''}" onclick="setPromise(${idx}, 'm')">Match ✅</button>
+          <button class="${S.prom[idx] === 'x' ? 'on p' : ''}" onclick="setPromise(${idx}, 'x')">Mismatch ❌</button>
+          <button class="${(S.prom[idx] || 'n') === 'n' ? 'on n' : ''}" onclick="setPromise(${idx}, 'n')">Unverified ⬜</button>
+        </div>
+      </div>
+    `).join("")}
+
+    <div class="card">
+      <b class="serif" style="font-size:17px;">Attach Photographic Evidence</b>
+      <p style="font-size:12px;color:var(--text-muted);margin:4px 0 12px;">Capture broken tiles, dampness, meter boards, or mess food. Compressed safely on your device (max 3).</p>
+
+      <div class="photo-uploader" onclick="document.getElementById('photoInput').click()">
+        <span style="font-size:24px;">📷</span>
+        <div style="font-weight:600;font-size:14px;margin-top:4px;">Take or Select Photo</div>
+        <small style="color:var(--text-muted);">${S.photos.length}/3 photos added</small>
+        <input type="file" id="photoInput" accept="image/*" multiple style="display:none;" onchange="handlePhotoUpload(this)">
+      </div>
+
+      ${S.photos.length > 0 ? `
+        <div class="photo-grid">
+          ${S.photos.map((ph, idx) => `
+            <div class="photo-thumb">
+              <img src="${ph}" onclick="openImgModal('${ph}')" title="Click to enlarge">
+              <button class="del" onclick="removePhoto(${idx})">✕</button>
+            </div>
+          `).join("")}
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="row-actions">
+      <button class="btn sec" onclick="goScreen(3)">Back</button>
+      <button class="btn" onclick="generateRealityCard()">Generate Reality Card ✨</button>
+    </div>
+  `;
+}
+
+function setPromise(idx, val) { S.prom[idx] = val; render(); }
+
+function handlePhotoUpload(el) {
+  const files = Array.from(el.files).filter(f => f.type.startsWith("image/"));
+  const remainingSlots = 3 - S.photos.length;
+  if (remainingSlots <= 0) { toast("Maximum 3 photos allowed."); return; }
+  
+  files.slice(0, remainingSlots).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDim = 900;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+          else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL("image/jpeg", 0.75);
+        if (S.photos.length < 3) {
+          S.photos.push(compressed);
+          render();
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  el.value = "";
+}
+
+function removePhoto(idx) {
+  S.photos.splice(idx, 1);
+  render();
+}
+
+async function generateRealityCard() {
+  await saveCurrentAudit();
+  goScreen(5);
+}
+
+async function saveCurrentAudit() {
+  const auditData = {
+    id: S.id || "audit_" + Date.now().toString(36),
+    date: S.date || new Date().toISOString(),
+    pg: S.pg,
+    quickMode: S.quickMode,
+    ans: S.ans,
+    cost: S.cost,
+    sharing: S.sharing,
+    prom: S.prom,
+    traps: S.traps,
+    photos: S.photos
+  };
+  S.id = auditData.id;
+  await saveAuditDB(auditData);
+}
+
+// Screen 5: The Reality Card (Report)
+function renderScreen5() {
+  const m = calculateMetrics();
+  const promises = S.pg.promises || [];
+  
+  // Ring gradient calculation
+  const scoreVal = m.score !== null ? m.score : 0;
+  const ringPct = (scoreVal / 10) * 100;
+  const ringColor = scoreVal >= 7.5 ? "var(--ok)" : scoreVal >= 5 ? "var(--warn)" : "var(--red)";
+  const ringGlow = scoreVal >= 7.5 ? "rgba(46,204,113,0.3)" : scoreVal >= 5 ? "rgba(224,160,64,0.3)" : "rgba(255,82,82,0.3)";
+  
+  // Bar Chart percentages
+  const totalAnswered = m.counts.g + m.counts.a + m.counts.p;
+  const pctG = totalAnswered ? (m.counts.g / totalAnswered) * 100 : 0;
+  const pctA = totalAnswered ? (m.counts.a / totalAnswered) * 100 : 0;
+  const pctP = totalAnswered ? (m.counts.p / totalAnswered) * 100 : 0;
+
+  // Mismatches
+  const mismatches = [];
+  promises.forEach((p, idx) => {
+    if (S.prom[idx] === 'x') mismatches.push(p);
+  });
+
+  return `
+    <div class="card" style="padding:0;overflow:hidden;border-color:rgba(212,163,115,0.4);">
+      <!-- Hero Cover Image -->
+      <div style="position:relative;height:160px;width:100%;overflow:hidden;">
+        <img src="${S.photos.length > 0 ? S.photos[0] : S.pg.cover}" style="width:100%;height:100%;object-fit:cover;">
+        <div class="pg-scrim"></div>
+        <div style="position:absolute;bottom:14px;left:18px;right:18px;">
+          <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;font-weight:700;">Checkitz Reality Card</div>
+          <h2 class="serif" style="color:#fff;font-size:24px;margin:0;">${S.pg.name}</h2>
+          <div style="font-size:12px;color:rgba(255,255,255,0.8);">📍 ${S.pg.loc} • ${new Date(S.date).toLocaleDateString()}</div>
+        </div>
+      </div>
+
+      <div style="padding:20px;">
+        <!-- Score Ring -->
+        <div class="score-hero">
+          <div class="ring-box" style="--ring-pct:${ringPct};--ring-color:${ringColor};--ring-glow:${ringGlow};">
+            <div class="ring-inner">
+              <div>
+                <b>${m.score !== null ? m.score.toFixed(1) : "—"}</b>
+                <span>out of 10</span>
+              </div>
+            </div>
+          </div>
+          <b style="font-size:16px;">${m.score >= 7.5 ? "Solid Accommodation" : m.score >= 5 ? "Average with Caveats" : "High Risk / Caution"}</b>
+          <div style="font-size:12px;color:var(--text-muted);">${m.answeredCount} of ${m.totalChecks} inspection parameters rated</div>
+        </div>
+
+        <!-- Rating Breakdown Bar Chart -->
+        <div class="chart-bar-wrap">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;">
+            <b>Inspection Breakdown</b>
+            <span style="color:var(--text-muted);">${totalAnswered} checked</span>
+          </div>
+          <div class="chart-bar">
+            <div class="chart-seg g" style="width:${pctG}%;"></div>
+            <div class="chart-seg a" style="width:${pctA}%;"></div>
+            <div class="chart-seg p" style="width:${pctP}%;"></div>
+          </div>
+          <div class="chart-legend">
+            <span><span class="dot" style="background:var(--ok);"></span> Good (${m.counts.g})</span>
+            <span><span class="dot" style="background:var(--warn);"></span> Average (${m.counts.a})</span>
+            <span><span class="dot" style="background:var(--red);"></span> Poor (${m.counts.p})</span>
+          </div>
+        </div>
+
+        <!-- Traps & Warnings -->
+        ${(S.traps.commercialElec || S.traps.depositDeduction || S.traps.strictCurfew || mismatches.length > 0) ? `
+          <div class="alert">
+            <div>
+              <b>Critical Warnings Detected:</b>
+              <ul style="margin:6px 0 0 16px;font-size:12px;">
+                ${S.traps.commercialElec ? "<li>High commercial electricity tariff (>₹10/unit)</li>" : ""}
+                ${S.traps.depositDeduction ? "<li>Non-refundable deposit deduction clause noted</li>" : ""}
+                ${S.traps.strictCurfew ? "<li>Strict gate curfew lock before 8:30 PM</li>" : ""}
+                ${mismatches.map(m => `<li>Advertised promise broken: <b>${m}</b></li>`).join("")}
+              </ul>
+            </div>
+          </div>
+        ` : `
+          <div class="alert good">
+            <div><b>Clean Audit:</b> No critical red-flags or promise mismatches recorded.</div>
+          </div>
+        `}
+
+        <!-- Cost Breakdown Card -->
+        <div style="background:var(--surface-card);border-radius:var(--radius-md);padding:14px;margin:16px 0;border:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <b class="serif" style="font-size:16px;">True Financial Commitment</b>
+            <span style="font-size:11px;background:var(--surface-elevated);padding:3px 8px;border-radius:99px;">${S.sharing}-Sharing</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;">
+            <span style="color:var(--text-muted);">Your Real Monthly Cost:</span>
+            <b>₹${Math.round(m.myMonthly).toLocaleString('en-IN')} / mo</b>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;">
+            <span style="color:var(--text-muted);">Your Upfront Deposit:</span>
+            <b>₹${Math.round(m.myDeposit).toLocaleString('en-IN')}</b>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-top:1px solid var(--border);margin-top:6px;color:var(--gold);font-weight:700;">
+            <span>Initial Cash Required:</span>
+            <span>₹${Math.round(m.myUpfront).toLocaleString('en-IN')}</span>
+          </div>
+        </div>
+
+        <!-- Evidence Photos Carousel / Grid -->
+        ${S.photos.length > 0 ? `
+          <div style="margin:16px 0;">
+            <b style="font-size:13px;color:var(--text-secondary);display:block;margin-bottom:8px;">Photographic Evidence (${S.photos.length})</b>
+            <div class="photo-grid">
+              ${S.photos.map(ph => `
+                <div class="photo-thumb">
+                  <img src="${ph}" onclick="openImgModal('${ph}')" title="Click to view full size">
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Legal Disclaimer -->
+        <p style="font-size:11px;color:var(--text-muted);margin:16px 0 20px;text-align:center;">
+          Disclaimer: This Reality Card reflects personal observations recorded on ${new Date(S.date).toLocaleDateString()} and is not a commercial guarantee.
+        </p>
+
+        <!-- Action Buttons -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn whatsapp" onclick="shareWhatsApp()">
+            💬 Share Summary to WhatsApp (Parents / Roommates)
+          </button>
+          
+          <div class="row-actions" style="margin-top:0;">
+            <button class="btn sec" onclick="exportPDF()">📄 Download PDF</button>
+            <button class="btn sec" onclick="goScreen(2)">✏️ Edit Audit</button>
+          </div>
+          
+          <button class="btn sec" onclick="goScreen(1)">Start New Audit</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// WhatsApp Share Formatter
+function shareWhatsApp() {
+  const m = calculateMetrics();
+  const promises = S.pg.promises || [];
+  const mismatches = [];
+  promises.forEach((p, idx) => { if (S.prom[idx] === 'x') mismatches.push(p); });
+
+  let text = `🏠 *Checkitz Reality Card: ${S.pg.name}*\n`;
+  text += `📍 *Area:* ${S.pg.loc}\n`;
+  text += `⭐ *Audit Score:* ${m.score !== null ? m.score.toFixed(1) + "/10" : "Unscored"} (${m.answeredCount} items verified)\n\n`;
+  
+  text += `💰 *Financial Breakdown (${S.sharing}-Sharing):*\n`;
+  text += `• Real Monthly Cost: ₹${Math.round(m.myMonthly).toLocaleString('en-IN')}/month\n`;
+  text += `• Upfront Deposit: ₹${Math.round(m.myDeposit).toLocaleString('en-IN')}\n`;
+  text += `• Total Initial Payment: ₹${Math.round(m.myUpfront).toLocaleString('en-IN')}\n\n`;
+
+  if (mismatches.length > 0 || S.traps.commercialElec || S.traps.depositDeduction || S.traps.strictCurfew) {
+    text += `⚠️ *Red Flags & Mismatches Detected:*\n`;
+    if (S.traps.commercialElec) text += `• High electricity rate (>₹10/unit)\n`;
+    if (S.traps.depositDeduction) text += `• Non-refundable deposit deduction\n`;
+    if (S.traps.strictCurfew) text += `• Strict early curfew\n`;
+    mismatches.forEach(mm => { text += `• Broken promise: ${mm}\n`; });
+    text += `\n`;
+  } else {
+    text += `✅ *Clean Audit:* No critical mismatches found.\n\n`;
+  }
+
+  text += `Audited on Checkitz: https://praveens-arp.github.io/Checkitz/`;
+
+  const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+  toast("WhatsApp summary created!");
+}
+
+// jsPDF Export
+async function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { toast("PDF generator loading, please retry..."); return; }
+  
+  toast("Generating PDF report...");
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const m = calculateMetrics();
+  
+  // Luxury Dark Editorial Palette for PDF
+  doc.setFillColor(11, 15, 23);
+  doc.rect(0, 0, 210, 32, "F");
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(212, 163, 115);
+  doc.text("Checkitz", 16, 20);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(255, 255, 255);
+  doc.text("PG Reality Card & Audit Report", 194, 20, { align: "right" });
+  
+  let y = 44;
+  doc.setTextColor(20, 20, 20);
+  doc.setFontSize(16);
+  doc.text(S.pg.name, 16, y);
+  y += 6;
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Location: ${S.pg.loc}  |  Audit Date: ${new Date(S.date).toLocaleDateString()}`, 16, y);
+  
+  y += 12;
+  doc.setDrawColor(220, 220, 220);
+  doc.line(16, y, 194, y);
+  y += 10;
+  
+  // Score Box
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(20, 20, 20);
+  doc.text("Inspection Score:", 16, y);
+  doc.setTextColor(m.score >= 7.5 ? 46 : m.score >= 5 ? 224 : 220, m.score >= 7.5 ? 204 : m.score >= 5 ? 160 : 50, 50);
+  doc.text(`${m.score !== null ? m.score.toFixed(1) + " / 10" : "Unscored"} (${m.answeredCount} checked)`, 60, y);
+  
+  y += 10;
+  doc.setTextColor(20, 20, 20);
+  doc.text("Financial Breakdown:", 16, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(`Occupancy: ${S.sharing}-Sharing`, 20, y); y += 5;
+  doc.text(`Real Monthly Cost per person: Rs. ${Math.round(m.myMonthly).toLocaleString('en-IN')}`, 20, y); y += 5;
+  doc.text(`Security Deposit per person: Rs. ${Math.round(m.myDeposit).toLocaleString('en-IN')}`, 20, y); y += 5;
+  doc.setFont("helvetica", "bold");
+  doc.text(`Initial Outflow Required: Rs. ${Math.round(m.myUpfront).toLocaleString('en-IN')}`, 20, y);
+  
+  y += 12;
+  doc.line(16, y, 194, y);
+  y += 10;
+  
+  // Checks List
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Inspection Parameters Evaluated:", 16, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  
+  const checks = S.quickMode ? AUDIT_CHECKS.filter(c => c.vital) : AUDIT_CHECKS;
+  checks.forEach((c, idx) => {
+    const val = S.ans[idx];
+    const label = val === 'g' ? "Good [10 pts]" : val === 'a' ? "Average [5 pts]" : val === 'p' ? "Poor [0 pts]" : "Not Checked";
+    doc.text(`• ${c.name}: ${label}`, 20, y);
+    y += 5;
+  });
+  
+  // Evidence photos if any
+  if (S.photos.length > 0) {
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Attached Photographic Evidence:", 16, y);
+    y += 8;
+    S.photos.forEach((ph, i) => {
+      if (y < 230) {
+        doc.addImage(ph, "JPEG", 16 + (i * 60), y, 52, 40);
+      }
+    });
+    y += 45;
+  }
+  
+  // Footer
+  doc.setFontSize(8);
+  doc.setTextColor(130, 130, 130);
+  doc.text("Generated by Checkitz — Student PG Audit & Reality Intelligence Platform.", 16, 285);
+  
+  doc.save(`${S.pg.name.replace(/[^a-zA-Z0-9]/g, "_")}_RealityCard.pdf`);
+  toast("PDF Downloaded successfully!");
+}
+
+// Screen 6: Saved Audits & Side-by-Side Comparison Matrix
+let savedAuditsList = [];
+let selectedForCompare = [];
+
+async function renderScreen6() {
+  savedAuditsList = await getAllAuditsDB();
+  
+  return `
+    <div style="margin-bottom:16px;">
+      <h2 class="serif" style="font-size:24px;">Saved Audits & <span class="italic">Comparison</span></h2>
+      <p class="hero-sub">Select any 2 or 3 saved hostels to compare costs and condition side-by-side.</p>
+    </div>
+
+    ${savedAuditsList.length === 0 ? `
+      <div class="card" style="text-align:center;padding:36px 20px;">
+        <span style="font-size:36px;">📂</span>
+        <h3 class="serif" style="margin-top:10px;">No Saved Audits Yet</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin:6px 0 16px;">Audits you complete and save will appear here offline.</p>
+        <button class="btn" onclick="goScreen(1)">Start an Audit Now</button>
+      </div>
+    ` : `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <b style="font-size:13px;color:var(--text-secondary);">Select up to 3 to Compare:</b>
+        ${selectedForCompare.length >= 2 ? `
+          <button class="btn" style="width:auto;padding:6px 14px;font-size:12px;" onclick="renderComparisonView()">
+            Compare (${selectedForCompare.length}) ⚔️
+          </button>
+        ` : ''}
+      </div>
+
+      <div id="compareArea"></div>
+
+      ${savedAuditsList.map(a => {
+        const isChecked = selectedForCompare.includes(a.id);
+        const rent = parseFloat(a.cost?.rent) || 0;
+        const totalCost = rent + (parseFloat(a.cost?.food)||0) + (parseFloat(a.cost?.elec)||0) + (parseFloat(a.cost?.other)||0);
+        const myCost = totalCost / (a.sharing || 1);
+        
+        return `
+          <div class="card" style="padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div style="display:flex;align-items:flex-start;gap:12px;">
+                <input type="checkbox" ${isChecked ? "checked" : ""} onchange="toggleCompare('${a.id}')" style="transform:scale(1.3);margin-top:4px;cursor:pointer;">
+                <div>
+                  <h3 class="serif" style="font-size:18px;">${a.pg.name}</h3>
+                  <div style="font-size:12px;color:var(--text-muted);">📍 ${a.pg.loc} • ${new Date(a.date).toLocaleDateString()}</div>
+                </div>
+              </div>
+              <button class="icon-btn" onclick="deleteAuditItem('${a.id}')" title="Delete Audit" style="width:28px;height:28px;font-size:12px;">🗑️</button>
+            </div>
+            
+            <div style="display:flex;justify-content:space-between;margin:12px 0;font-size:13px;background:var(--surface-card);padding:8px 12px;border-radius:var(--radius-sm);">
+              <span>Monthly Share: <b>₹${Math.round(myCost).toLocaleString('en-IN')}</b> (${a.sharing || 1}-Share)</span>
+              <span style="color:var(--gold);font-weight:600;">Photos: ${a.photos?.length || 0}</span>
+            </div>
+
+            <div class="row-actions" style="margin-top:8px;">
+              <button class="btn sec" style="padding:8px;font-size:13px;" onclick="reopenAudit('${a.id}')">View Reality Card</button>
+              <button class="btn sec" style="padding:8px;font-size:13px;" onclick="editAudit('${a.id}')">Edit</button>
+            </div>
+          </div>
+        `;
+      }).join("")}
+    `}
+  `;
+}
+
+function toggleCompare(id) {
+  if (selectedForCompare.includes(id)) {
+    selectedForCompare = selectedForCompare.filter(x => x !== id);
+  } else {
+    if (selectedForCompare.length >= 3) {
+      toast("You can compare up to 3 PGs at a time.");
+      return;
+    }
+    selectedForCompare.push(id);
+  }
+  render();
+}
+
+function renderComparisonView() {
+  const items = savedAuditsList.filter(a => selectedForCompare.includes(a.id));
+  const el = document.getElementById("compareArea");
+  if (!el) return;
+  
+  el.innerHTML = `
+    <div class="card" style="background:var(--surface-elevated);border-color:var(--gold);padding:16px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3 class="serif" style="color:var(--gold);font-size:18px;">⚔️ Side-by-Side Comparison</h3>
+        <button class="btn sec" style="width:auto;padding:4px 10px;font-size:11px;" onclick="selectedForCompare=[];render();">Clear</button>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="cmp-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              ${items.map(it => `<th>${it.pg.name}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Location</b></td>
+              ${items.map(it => `<td>${it.pg.loc}</td>`).join("")}
+            </tr>
+            <tr>
+              <td><b>Sharing</b></td>
+              ${items.map(it => `<td>${it.sharing || 1}-Sharing</td>`).join("")}
+            </tr>
+            <tr>
+              <td><b>My Monthly Cost</b></td>
+              ${items.map(it => {
+                const total = (parseFloat(it.cost?.rent)||0) + (parseFloat(it.cost?.food)||0) + (parseFloat(it.cost?.elec)||0) + (parseFloat(it.cost?.other)||0);
+                const share = total / (it.sharing || 1);
+                return `<td style="color:var(--gold);font-weight:700;">₹${Math.round(share).toLocaleString('en-IN')}</td>`;
+              }).join("")}
+            </tr>
+            <tr>
+              <td><b>Deposit</b></td>
+              ${items.map(it => `<td>₹${Math.round((parseFloat(it.cost?.dep)||0)/(it.sharing||1)).toLocaleString('en-IN')}</td>`).join("")}
+            </tr>
+            <tr>
+              <td><b>Water Rating</b></td>
+              ${items.map(it => `<td>${it.ans?.[2] === 'g' ? 'Good' : it.ans?.[2] === 'a' ? 'Average' : it.ans?.[2] === 'p' ? 'Poor' : '—'}</td>`).join("")}
+            </tr>
+            <tr>
+              <td><b>Power & Meter</b></td>
+              ${items.map(it => `<td>${it.traps?.commercialElec ? '⚠️ High Tariff' : 'Normal'}</td>`).join("")}
+            </tr>
+            <tr>
+              <td><b>Deposit Risk</b></td>
+              ${items.map(it => `<td>${it.traps?.depositDeduction ? '⚠️ Deduction' : 'Refundable'}</td>`).join("")}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+async function reopenAudit(id) {
+  const audit = savedAuditsList.find(a => a.id === id);
+  if (!audit) return;
+  S = { ...audit };
+  goScreen(5);
+}
+
+async function editAudit(id) {
+  const audit = savedAuditsList.find(a => a.id === id);
+  if (!audit) return;
+  S = { ...audit };
+  goScreen(2);
+}
+
+async function deleteAuditItem(id) {
+  if (confirm("Delete this saved audit?")) {
+    await deleteAuditDB(id);
+    selectedForCompare = selectedForCompare.filter(x => x !== id);
+    render();
+    toast("Audit deleted.");
+  }
+}
+
+// Render Engine
+async function render() {
+  const app = document.getElementById("app");
+  
+  if (S.screen === 1) app.innerHTML = renderScreen1();
+  else if (S.screen === 2) app.innerHTML = renderScreen2();
+  else if (S.screen === 3) app.innerHTML = renderScreen3();
+  else if (S.screen === 4) app.innerHTML = renderScreen4();
+  else if (S.screen === 5) app.innerHTML = renderScreen5();
+  else if (S.screen === 6) app.innerHTML = await renderScreen6();
+
+  // Tab Bar
+  const tabs = [
+    { num: 1, label: "Explore" },
+    { num: 2, label: "Audit" },
+    { num: 3, label: "Costs" },
+    { num: 4, label: "Reality" },
+    { num: 5, label: "Report" },
+    { num: 6, label: "Saved" }
+  ];
+
+  document.getElementById("tabBar").innerHTML = tabs.map(t => `
+    <button class="tab-btn ${S.screen === t.num ? 'active' : ''}" onclick="goScreen(${t.num})">
+      <span class="num">${t.num}</span>
+      ${t.label}
+    </button>
+  `).join("");
+}
+
+// Initialize on Load
+window.addEventListener("DOMContentLoaded", async () => {
+  initTheme();
+  await initDB();
+  render();
+});
+</script>
+</body>
+</html>
